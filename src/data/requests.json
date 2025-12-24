@@ -1,0 +1,138 @@
+{
+  "active": {
+    "id": "req-123",
+    "status": "pending",
+    "items": [
+      {
+        "id": "veg_tomato",
+        "name": "Tomato",
+        "quantity": 2,
+        "price": 50,
+        "image": "https://cdn.pixabay.com/photo/2011/03/16/16/01/tomatoes-5356_1280.jpg"
+      },
+      {
+        "id": "grain_rice",
+        "name": "Rice (Local / Unpolished)",
+        "quantity": 1,
+        "price": 80,
+        "image": "https://img.etimg.com/thumb/width-1200,height-900,imgsize-242102,resizemode-75,msid-120284877/magazines/panache/is-brown-rice-as-healthy-as-you-think-new-study-uncovers-concerning-toxic-arsenic-risk.jpg"
+      },
+      {
+        "id": "dairy_milk",
+        "name": "Milk (Doodh)",
+        "quantity": 2,
+        "price": 60,
+        "image": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800"
+      }
+    ],
+    "totalAmount": 250,
+    "deliveryDay": "Friday",
+    "deliveryDate": "2025-12-15",
+    "createdAt": "2025-12-10"
+  },
+  "past": [
+    {
+      "id": "req-122",
+      "status": "delivered",
+      "items": [
+        {
+          "id": "dairy_milk",
+          "name": "Milk (Doodh)",
+          "quantity": 2,
+          "price": 60,
+          "image": "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800"
+        },
+        {
+          "id": "veg_tomato",
+          "name": "Tomato",
+          "quantity": 1,
+          "price": 50,
+          "image": "https://cdn.pixabay.com/photo/2011/03/16/16/01/tomatoes-5356_1280.jpg"
+        },
+        {
+          "id": "veg_onion",
+          "name": "Onion",
+          "quantity": 1,
+          "price": 40,
+          "image": "https://www.jiomart.com/images/product/original/590003515/onion-1-kg-product-images-o590003515-p590003515-0-202511020955.jpg"
+        }
+      ],
+      "totalAmount": 210,
+      "deliveryDay": "Wednesday",
+      "deliveryDate": "2025-12-07",
+      "createdAt": "2025-12-03"
+    },
+    {
+      "id": "req-121",
+      "status": "delivered",
+      "items": [
+        {
+          "id": "grain_rice",
+          "name": "Rice (Local / Unpolished)",
+          "quantity": 2,
+          "price": 80,
+          "image": "https://img.etimg.com/thumb/width-1200,height-900,imgsize-242102,resizemode-75,msid-120284877/magazines/panache/is-brown-rice-as-healthy-as-you-think-new-study-uncovers-concerning-toxic-arsenic-risk.jpg"
+        },
+        {
+          "id": "pulse_toor",
+          "name": "Toor Dal (Arhar)",
+          "quantity": 1,
+          "price": 120,
+          "image": "https://organofarmstore.co.in/wp-content/uploads/2023/09/toor-dal.jpg"
+        }
+      ],
+      "totalAmount": 280,
+      "deliveryDay": "Monday",
+      "deliveryDate": "2025-11-28",
+      "createdAt": "2025-11-25"
+    },
+    {
+      "id": "req-120",
+      "status": "delivered",
+      "items": [
+        {
+          "id": "veg_potato",
+          "name": "Potato",
+          "quantity": 3,
+          "price": 30,
+          "image": "https://cdn.pixabay.com/photo/2016/08/11/08/43/potatoes-1585060_1280.jpg"
+        },
+        {
+          "id": "veg_spinach",
+          "name": "Spinach",
+          "quantity": 2,
+          "price": 25,
+          "image": "https://www.dripworks.com/content/spinach-growing-guide-banner.jpg"
+        },
+        {
+          "id": "dairy_ghee",
+          "name": "Ghee (Clarified Butter)",
+          "quantity": 1,
+          "price": 500,
+          "image": "https://cdn.shopify.com/s/files/1/0586/8234/3501/files/cow_desi_ghee_image.webp"
+        }
+      ],
+      "totalAmount": 640,
+      "deliveryDay": "Friday",
+      "deliveryDate": "2025-11-18",
+      "createdAt": "2025-11-15"
+    },
+    {
+      "id": "req-119",
+      "status": "cancelled",
+      "items": [
+        {
+          "id": "fruit_mango",
+          "name": "Mango",
+          "quantity": 2,
+          "price": 150,
+          "image": "https://cdn.pixabay.com/photo/2016/03/05/22/18/food-1239241_1280.jpg"
+        }
+      ],
+      "totalAmount": 300,
+      "deliveryDay": "Wednesday",
+      "deliveryDate": "2025-11-10",
+      "createdAt": "2025-11-08"
+    }
+  ]
+}

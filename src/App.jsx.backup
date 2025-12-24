@@ -1,0 +1,17 @@
+import { useState } from 'react'
+import './index.css'
+import Sidebar from './Sidebar'
+import MainContent from './MainContent'
+
+function App() {
+  const [activeSection, setActiveSection] = useState('overview')
+
+  return (
+    <div className="flex min-h-screen bg-gray-100">
+      <Sidebar setActiveSection={setActiveSection} />
+      <MainContent activeSection={activeSection} />
+    </div>
+  )
+}
+
+export default App
