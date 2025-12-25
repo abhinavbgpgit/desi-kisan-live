@@ -217,7 +217,7 @@ const HomeDashboard = () => {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
             </svg>
-            {t('view_edit_products') || 'View/Edit Your Products'}
+            {t('view_edit_products') || 'View Your Products'}
           </Link>
         </div>
       </div>
@@ -247,7 +247,7 @@ const HomeDashboard = () => {
             {t('see_all')}
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

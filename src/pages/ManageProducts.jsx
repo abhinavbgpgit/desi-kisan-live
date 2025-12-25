@@ -14,7 +14,7 @@ const ManageProducts = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <h1 className="text-xl font-bold text-gray-800">{t('view_edit_products') || 'View/Edit Your Products'}</h1>
+          <h1 className="text-xl font-bold text-gray-800">{t('view_edit_products') || 'View Your Products'}</h1>
         </div>
       </div>
 
