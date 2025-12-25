@@ -121,7 +121,7 @@ const CategoryListing = () => {
             <div className="h-8 bg-gray-200 rounded w-32 animate-pulse"></div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[...Array(6)].map((_, index) => (
               <div key={index} className="bg-white rounded-xl shadow-sm overflow-hidden animate-pulse">
                 <div className="h-32 bg-gray-200"></div>
@@ -202,7 +202,7 @@ const CategoryListing = () => {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {sortedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
