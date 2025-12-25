@@ -15,8 +15,9 @@ import RequestConfirmation from './pages/RequestConfirmation'
 import MyRequests from './pages/MyRequests'
 import Profile from './pages/Profile'
 import NotFound from './pages/NotFound'
-import Farmers from './pages/Farmers'
-import FarmerDetails from './pages/FarmerDetails'
+import AddProduct from './pages/AddProduct'
+import EditProfile from './pages/EditProfile'
+import ManageProducts from './pages/ManageProducts'
 import AllTrainings from './pages/training/all-tranings/AllTrainings'
 import UpcomingTrainings from './pages/training/upcoming/UpcomingTrainings'
 import ApplyForTraining from './pages/training/apply/ApplyForTraining'
@@ -115,8 +116,9 @@ function App() {
                 <Route path="request-confirmation" element={<RequestConfirmation />} />
                 <Route path="requests" element={<MyRequests />} />
                 <Route path="profile" element={<Profile />} />
-                <Route path="farmers" element={<Farmers />} />
-                <Route path="farmer/:farmerId" element={<FarmerDetails />} />
+                <Route path="add-product" element={<AddProduct />} />
+                <Route path="edit-profile" element={<EditProfile />} />
+                <Route path="manage-products" element={<ManageProducts />} />
               </Route>
 
               {/* Redirect /app to /dashboard for backward compatibility */}

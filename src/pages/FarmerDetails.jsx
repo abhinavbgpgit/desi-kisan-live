@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import farmersData from '../data/farmers.json';
-import productData from '../data/data.json';
+import naturalFarmingData from '../data/natural-farming-products.json';
 
 // Import Ramesh Kumar's images
 import rameshMain from '../assets/farmers/ramesh_kumar.png';
@@ -35,8 +35,8 @@ const FarmerDetails = () => {
           throw new Error('Farmer not found');
         }
 
-        // Get products from data.json and filter by farmer's specialties
-        const allProducts = productData.map(item => ({
+        // Get products from natural-farming-products.json and filter by farmer's specialties
+        const allProducts = naturalFarmingData.map(item => ({
           id: item.id,
           name: item.name,
           description: item.description,

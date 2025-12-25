@@ -5,11 +5,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { apiService as api } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import ComboPackCard from '../components/ComboPackCard';
-import FarmerCard from '../components/FarmerCard';
-import farmersData from '../data/farmers.json';
 
 const HomeDashboard = () => {
-  const [searchQuery, setSearchQuery] = useState('');
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [comboPacks, setComboPacks] = useState([]);
   const [activeRequest, setActiveRequest] = useState(null);
@@ -44,44 +41,86 @@ const HomeDashboard = () => {
   }, []);
 
   const categories = [
-    { name: t('categories.vegetables'), icon: "🥬", route: "/dashboard/category/Vegetables" },
-    { name: t('categories.fruits'), icon: "🍎", route: "/dashboard/category/Fruits" },
-    { name: t('categories.grains'), icon: "🌾", route: "/dashboard/category/Grains" },
-    { name: t('categories.dairy'), icon: "🥛", route: "/dashboard/category/Dairy" },
-    { name: t('categories.desi_nonveg'), icon: "🍖", route: "/dashboard/category/Desi Non-Veg" },
-    { name: t('categories.local_processed'), icon: "🧈", route: "/dashboard/category/Local Processed Foods" },
+    {
+      name: t('categories.natural_fertilizers') || 'प्राकृतिक खाद',
+      nameEn: 'Natural Fertilizers',
+      icon: "🌱",
+      route: "/dashboard/category/natural-fertilizers"
+    },
+    {
+      name: t('categories.bio_pesticides') || 'प्राकृतिक कीटनाशक',
+      nameEn: 'Bio Pesticides',
+      icon: "🛡️",
+      route: "/dashboard/category/bio-pesticides"
+    },
+    {
+      name: t('categories.bio_fertilizers') || 'जैव उर्वरक',
+      nameEn: 'Bio Fertilizers',
+      icon: "🦠",
+      route: "/dashboard/category/bio-fertilizers"
+    },
+    {
+      name: t('categories.desi_seeds') || 'देसी बीज',
+      nameEn: 'Desi Seeds',
+      icon: "🌾",
+      route: "/dashboard/category/desi-seeds"
+    },
+    {
+      name: t('categories.plants_saplings') || 'पौधे / नर्सरी',
+      nameEn: 'Plants & Saplings',
+      icon: "🌿",
+      route: "/dashboard/category/plants-saplings"
+    },
+    {
+      name: t('categories.farm_tools') || 'कृषि औज़ार',
+      nameEn: 'Farm Tools',
+      icon: "🔨",
+      route: "/dashboard/category/farm-tools"
+    },
+    {
+      name: t('categories.small_machinery') || 'छोटी मशीनें',
+      nameEn: 'Small Machinery',
+      icon: "⚙️",
+      route: "/dashboard/category/small-machinery"
+    },
+    {
+      name: t('categories.irrigation') || 'सिंचाई सामान',
+      nameEn: 'Irrigation Items',
+      icon: "💧",
+      route: "/dashboard/category/irrigation"
+    },
+    {
+      name: t('categories.animal_care') || 'पशुपालन उत्पाद',
+      nameEn: 'Animal Care',
+      icon: "🐄",
+      route: "/dashboard/category/animal-care"
+    },
+    {
+      name: t('categories.storage_packaging') || 'भंडारण व पैकिंग',
+      nameEn: 'Storage & Packaging',
+      icon: "📦",
+      route: "/dashboard/category/storage-packaging"
+    },
+    {
+      name: t('categories.training_services') || 'प्रशिक्षण व सेवाएँ',
+      nameEn: 'Training & Services',
+      icon: "📚",
+      route: "/dashboard/category/training-services"
+    },
   ];
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    // Implement search functionality
-    console.log('Searching for:', searchQuery);
-  };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="p-4 bg-white shadow-sm">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search for fresh produce..."
-              className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
-              disabled
-            />
-            <div className="absolute left-4 top-3 text-gray-400">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
+          <div className="w-full bg-gray-200 py-3 px-6 rounded-full animate-pulse"></div>
         </div>
 
         <div className="p-4 mt-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('shop_by_category')}</h2>
           <div className="flex gap-4 overflow-x-auto pb-2">
-            {[...Array(6)].map((_, index) => (
-              <div key={index} className="bg-white rounded-xl p-4 text-center shadow-sm animate-pulse flex-shrink-0 w-24">
+            {[...Array(11)].map((_, index) => (
+              <div key={index} className="bg-white rounded-xl p-4 text-center shadow-sm animate-pulse flex-shrink-0 w-32">
                 <div className="text-3xl mb-2 bg-gray-200 rounded-full w-12 h-12 mx-auto"></div>
                 <div className="text-sm font-medium text-gray-700 bg-gray-200 rounded h-4"></div>
               </div>
@@ -145,38 +184,56 @@ const HomeDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Search Bar */}
+      {/* Action Buttons */}
       <div className="p-4 bg-white shadow-sm">
-        <form onSubmit={handleSearch}>
-          <div className="relative">
-            <input
-              type="text"
-              placeholder={t('search_placeholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <div className="absolute left-4 top-3 text-gray-400">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-          </div>
-        </form>
+        <div className="grid grid-cols-1 gap-3">
+          {/* Add Product Button */}
+          <Link
+            to="/dashboard/add-product"
+            className="w-full bg-green-600 text-white py-3 px-6 rounded-full font-semibold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 shadow-md"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            {t('add_product') || 'Add Product'}
+          </Link>
+
+          {/* Edit Profile Button */}
+          <Link
+            to="/dashboard/edit-profile"
+            className="w-full bg-blue-600 text-white py-3 px-6 rounded-full font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-md"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            {t('edit_your_profile') || 'Edit Your Profile'}
+          </Link>
+
+          {/* View/Edit Products Button */}
+          <Link
+            to="/dashboard/manage-products"
+            className="w-full bg-purple-600 text-white py-3 px-6 rounded-full font-semibold hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 shadow-md"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+            {t('view_edit_products') || 'View/Edit Your Products'}
+          </Link>
+        </div>
       </div>
 
       {/* Categories */}
       <div className="p-4">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('shop_by_category')}</h2>
-        <div className="flex gap-4 overflow-x-auto pb-2">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('shop_by_category') || '🌱 Natural Farming Categories'}</h2>
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
           {categories.map((category) => (
             <Link
-              key={category.name}
+              key={category.route}
               to={category.route}
-              className="bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow flex-shrink-0 w-40"
+              className="bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-all hover:scale-105 flex-shrink-0 w-32 border border-gray-100"
             >
               <div className="text-3xl mb-2">{category.icon}</div>
-              <div className="text-sm font-medium text-gray-700">{category.name}</div>
+              <div className="text-xs font-medium text-gray-700 line-clamp-2">{category.name}</div>
             </Link>
           ))}
         </div>
@@ -243,44 +300,6 @@ const HomeDashboard = () => {
         </div>
       )}
 
-      {/* Farmers Section */}
-      <div className="p-4 mt-6 bg-white rounded-xl relative">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">{t('meet_our_farmers')}</h2>
-          <Link to="/dashboard/farmers" className="text-green-600 text-sm hover:text-green-700 flex items-center">
-            {t('view_all_farmers').replace('{count}', farmersData.farmers.length)}
-            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Display first 5 farmers using FarmerCard component */}
-          {farmersData.farmers.slice(0, 5).map((farmer) => (
-            <FarmerCard key={farmer.id} farmer={farmer} />
-          ))}
-
-          {/* Browse All Farmers Card */}
-          <Link
-            to="/dashboard/farmers"
-            className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 text-center hover:from-green-100 hover:to-emerald-100 transition-all duration-300 border-2 border-green-200 hover:border-green-300 flex flex-col items-center justify-center group"
-          >
-            <div className="w-14 h-14 rounded-full mx-auto mb-3 bg-green-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.125-1.273-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.125-1.273.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <h3 className="font-bold text-gray-900 mb-1 text-sm">{t('explore_all_farmers')}</h3>
-            <p className="text-xs text-gray-600 mb-3">Discover {farmersData.farmers.length}+ local farmers</p>
-            <span className="inline-flex items-center text-green-600 text-sm font-semibold group-hover:text-green-700">
-              {t('browse_all')}
-              <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-          </Link>
-        </div>
-      </div>
     </div>
   );
 };

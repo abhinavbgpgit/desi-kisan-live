@@ -84,43 +84,67 @@ const mockFarmers = [
   }
 ];
 
-// Import data.json directly (Vite handles this)
-import productData from '../data/data.json';
+// Import natural-farming-products.json directly (Vite handles this)
+import naturalFarmingData from '../data/natural-farming-products.json';
 
-// Function to fetch products from data.json
+// Function to fetch products from natural-farming-products.json
 function fetchProductsFromDataJson() {
   try {
+    // Use only natural farming data
+    const allData = [...naturalFarmingData];
+    
     // Map data.json items to our product format
-    return productData.map(item => {
-      // Map categories from data.json to our PRODUCT_CATEGORIES
+    return allData.map(item => {
+      // Natural farming categories (keep as-is)
+      const naturalFarmingCategories = [
+        'natural-fertilizers',
+        'bio-pesticides',
+        'bio-fertilizers',
+        'desi-seeds',
+        'plants-saplings',
+        'farm-tools',
+        'small-machinery',
+        'irrigation',
+        'animal-care',
+        'storage-packaging',
+        'training-services'
+      ];
+      
       let productCategory;
-      switch(item.category) {
-        case 'vegetable':
-          productCategory = PRODUCT_CATEGORIES.VEGETABLES;
-          break;
-        case 'fruit':
-          productCategory = PRODUCT_CATEGORIES.FRUITS;
-          break;
-        case 'pulses_grains':
-          productCategory = PRODUCT_CATEGORIES.GRAINS;
-          break;
-        case 'dairy':
-          productCategory = PRODUCT_CATEGORIES.DAIRY;
-          break;
-        case 'oils_spices':
-          productCategory = PRODUCT_CATEGORIES.LOCAL_PROCESSED;
-          break;
-        case 'locery':
-          productCategory = PRODUCT_CATEGORIES.LOCAL_PROCESSED;
-          break;
-        case 'nonveg_local':
-          productCategory = PRODUCT_CATEGORIES.DESI_NONVEG;
-          break;
-        case 'herb':
-          productCategory = PRODUCT_CATEGORIES.VEGETABLES;
-          break;
-        default:
-          productCategory = PRODUCT_CATEGORIES.VEGETABLES;
+      
+      // Check if it's a natural farming product category
+      if (naturalFarmingCategories.includes(item.category)) {
+        productCategory = item.category; // Keep the original category
+      } else {
+        // Map old categories from data.json to our PRODUCT_CATEGORIES
+        switch(item.category) {
+          case 'vegetable':
+            productCategory = PRODUCT_CATEGORIES.VEGETABLES;
+            break;
+          case 'fruit':
+            productCategory = PRODUCT_CATEGORIES.FRUITS;
+            break;
+          case 'pulses_grains':
+            productCategory = PRODUCT_CATEGORIES.GRAINS;
+            break;
+          case 'dairy':
+            productCategory = PRODUCT_CATEGORIES.DAIRY;
+            break;
+          case 'oils_spices':
+            productCategory = PRODUCT_CATEGORIES.LOCAL_PROCESSED;
+            break;
+          case 'locery':
+            productCategory = PRODUCT_CATEGORIES.LOCAL_PROCESSED;
+            break;
+          case 'nonveg_local':
+            productCategory = PRODUCT_CATEGORIES.DESI_NONVEG;
+            break;
+          case 'herb':
+            productCategory = PRODUCT_CATEGORIES.VEGETABLES;
+            break;
+          default:
+            productCategory = PRODUCT_CATEGORIES.VEGETABLES;
+        }
       }
 
       // Map quantity units to our standard units
@@ -150,7 +174,8 @@ function fetchProductsFromDataJson() {
 
       // Assign random farmer and pricing
       const randomFarmer = mockFarmers[Math.floor(Math.random() * mockFarmers.length)];
-      const basePrice = Math.floor(Math.random() * 200) + 30;
+      // Use the price from the item if available, otherwise generate random price
+      const basePrice = item.price || (Math.floor(Math.random() * 200) + 30);
 
       return {
         id: item.id,
@@ -267,7 +292,59 @@ export const apiService = {
 
   // Product endpoints
   getFeaturedProducts: async () => {
-    return fetchProductsFromAPI(null, 6);
+    // Get 6 random products from natural-farming-products.json
+    const shuffled = [...naturalFarmingData].sort(() => 0.5 - Math.random());
+    const randomProducts = shuffled.slice(0, 6);
+    
+    // Map to product format
+    return randomProducts.map(item => {
+      const randomFarmer = mockFarmers[Math.floor(Math.random() * mockFarmers.length)];
+      const basePrice = item.price || (Math.floor(Math.random() * 200) + 30);
+      
+      let unit;
+      switch(item.quantity_units) {
+        case 'kg':
+          unit = 'kg';
+          break;
+        case 'litre':
+          unit = 'liter';
+          break;
+        case 'dozen':
+          unit = 'dozen';
+          break;
+        case 'bundle':
+          unit = 'bundle';
+          break;
+        case 'piece':
+          unit = 'piece';
+          break;
+        case 'jar':
+          unit = 'jar';
+          break;
+        default:
+          unit = 'kg';
+      }
+      
+      return {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        category: item.category,
+        price: basePrice,
+        unit: unit,
+        images: [item.image],
+        isOrganic: item.local_only || false,
+        certification: item.local_only ? 'Local Certified' : 'Standard',
+        benefits: [
+          item.description,
+          item.local_only ? 'Locally sourced' : 'Fresh produce',
+          item.farmer_sold ? 'Farmer direct' : 'Quality assured'
+        ].filter(Boolean),
+        deliveryDays: ['Monday', 'Wednesday', 'Friday'],
+        stock: Math.floor(Math.random() * 100) + 20,
+        farmerId: randomFarmer.id
+      };
+    });
   },
 
   getComboPacks: () => {
@@ -432,8 +509,37 @@ export const apiService = {
     }
   },
 
-  getProductsByCategory: async (category) => {
-    return fetchProductsFromAPI(category);
+  getProductsByCategory: async (categoryId) => {
+    const allProducts = fetchProductsFromDataJson();
+    
+    // Natural farming products use the category slug directly (e.g., 'desi-seeds')
+    // Regular products use old format (e.g., 'vegetable')
+    // We need to check both formats
+    
+    // First, try to find products with the exact category match (for natural farming products)
+    const directMatch = allProducts.filter(product => product.category === categoryId);
+    
+    if (directMatch.length > 0) {
+      return directMatch;
+    }
+    
+    // If no direct match, try mapping old category format to new slugs
+    const categoryMap = {
+      'Vegetables': 'vegetable',
+      'Fruits': 'fruit',
+      'Grains': 'pulses_grains',
+      'Dairy': 'dairy',
+      'Desi Non-Veg': 'nonveg_local',
+      'Local Processed Foods': 'locery'
+    };
+    
+    const mappedCategory = categoryMap[categoryId];
+    
+    if (mappedCategory) {
+      return allProducts.filter(product => product.category === mappedCategory);
+    }
+    
+    return allProducts;
   },
 
   getProductDetails: async (productId) => {

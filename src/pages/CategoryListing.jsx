@@ -2,13 +2,90 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiService as api } from '../services/api';
 import ProductCard from '../components/ProductCard';
+import { useLanguage } from '../context/LanguageContext';
 
 const CategoryListing = () => {
   const { categoryId } = useParams();
+  const { language } = useLanguage();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState('popularity');
+
+  // Category mapping for display names
+  const categoryNames = {
+    'natural-fertilizers': {
+      hi: 'प्राकृतिक खाद',
+      en: 'Natural Fertilizers',
+      icon: '🌱'
+    },
+    'bio-pesticides': {
+      hi: 'प्राकृतिक कीटनाशक',
+      en: 'Bio Pesticides',
+      icon: '🛡️'
+    },
+    'bio-fertilizers': {
+      hi: 'जैव उर्वरक',
+      en: 'Bio Fertilizers',
+      icon: '🦠'
+    },
+    'desi-seeds': {
+      hi: 'देसी बीज',
+      en: 'Desi Seeds',
+      icon: '🌾'
+    },
+    'plants-saplings': {
+      hi: 'पौधे / नर्सरी',
+      en: 'Plants & Saplings',
+      icon: '🌿'
+    },
+    'farm-tools': {
+      hi: 'कृषि औज़ार',
+      en: 'Farm Tools',
+      icon: '🔨'
+    },
+    'small-machinery': {
+      hi: 'छोटी मशीनें',
+      en: 'Small Machinery',
+      icon: '⚙️'
+    },
+    'irrigation': {
+      hi: 'सिंचाई सामान',
+      en: 'Irrigation Items',
+      icon: '💧'
+    },
+    'animal-care': {
+      hi: 'पशुपालन उत्पाद',
+      en: 'Animal Care',
+      icon: '🐄'
+    },
+    'storage-packaging': {
+      hi: 'भंडारण व पैकिंग',
+      en: 'Storage & Packaging',
+      icon: '📦'
+    },
+    'training-services': {
+      hi: 'प्रशिक्षण व सेवाएँ',
+      en: 'Training & Services',
+      icon: '📚'
+    }
+  };
+
+  const getCategoryDisplay = () => {
+    const category = categoryNames[categoryId];
+    if (category) {
+      return {
+        name: language === 'hi' ? category.hi : category.en,
+        icon: category.icon
+      };
+    }
+    return {
+      name: categoryId,
+      icon: '📦'
+    };
+  };
+
+  const categoryDisplay = getCategoryDisplay();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -97,7 +174,10 @@ const CategoryListing = () => {
         </Link>
 
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-bold text-gray-800 capitalize">{categoryId}</h1>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{categoryDisplay.icon}</span>
+            <h1 className="text-xl font-bold text-gray-800">{categoryDisplay.name}</h1>
+          </div>
           <div className="flex items-center space-x-2">
             <select
               value={sortBy}
