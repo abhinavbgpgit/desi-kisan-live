@@ -6,6 +6,7 @@ import { LanguageProvider } from './context/LanguageContext'
 import LandingPage from './pages/landingPage/LandingPage.jsx'
 import HowDesiBasketWorks from './pages/HowDesiBasketWorks'
 import Auth from './pages/Auth'
+import AuthNew from './pages/AuthNew'
 import MainLayout from './layouts/MainLayout'
 import HomeDashboard from './pages/HomeDashboard'
 import CategoryListing from './pages/CategoryListing'
@@ -73,6 +74,12 @@ function App() {
               <Route path="/landingPage" element={<LandingPage />} />
               <Route path="/how-desi-basket-works" element={<HowDesiBasketWorks />} />
               <Route path="/auth" element={
+                <AuthRoute>
+                  <AuthNew />
+                </AuthRoute>
+              } />
+              {/* Old Auth page kept for reference */}
+              <Route path="/auth-old" element={
                 <AuthRoute>
                   <Auth />
                 </AuthRoute>
