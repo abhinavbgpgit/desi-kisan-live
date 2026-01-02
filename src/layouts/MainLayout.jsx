@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User, Home, Users, ClipboardList, LogOut, UserCircle, Package, Languages } from 'lucide-react';
+import { ShoppingCart, User, Home, Users, ClipboardList, LogOut, UserCircle, Package, Languages, LayoutDashboard } from 'lucide-react';
 import desiLogo from '../assets/desi_logo.png';
 
 const MainLayout = () => {
@@ -107,31 +107,52 @@ const MainLayout = () => {
               />
             </Link>
           </div>
-          <div className="flex items-center space-x-4">
-            {/* Home Icon - Navigate to Landing Page */}
+          
+          {/* Desktop Navigation Menu - Same as Bottom Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
             <Link
-              to="/landingPage"
-              className="group"
-              title={language === 'hi' ? 'होम पेज पर जाएं' : 'Go to Home Page'}
+              to="/dashboard"
+              className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group"
             >
-              <Home
-                className={`text-gray-700 group-hover:text-green-600 transition-all duration-300 ${
-                  isScrolled ? 'w-5 h-5' : 'w-6 h-6'
-                }`}
-              />
+              <LayoutDashboard className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+              <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+                {language === 'hi' ? 'डैशबोर्ड' : 'Dashboard'}
+              </span>
+            </Link>
+
+            <Link
+              to="/dashboard/cart"
+              className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors relative group"
+            >
+              <div className={`relative transition-all duration-300 ${cartAnimation ? 'animate-bounce' : ''}`}>
+                {currentItemCount > 0 ? (
+                  <ShoppingCart className={`${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} fill="currentColor" />
+                ) : (
+                  <ShoppingCart className={`${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                )}
+                {currentItemCount > 0 && (
+                  <span className={`absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-semibold ${
+                    cartAnimation ? 'scale-125' : 'scale-100'
+                  } transition-all duration-300`}>
+                    {currentItemCount}
+                  </span>
+                )}
+              </div>
+              <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+                {language === 'hi' ? 'कार्ट' : 'Cart'}
+              </span>
             </Link>
 
             {/* Language Switcher */}
             <div className="relative" ref={languageDropdownRef}>
               <button
                 onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                className="focus:outline-none group"
+                className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group focus:outline-none"
               >
-                <Languages
-                  className={`text-gray-700 group-hover:text-green-600 transition-all duration-300 ${
-                    isScrolled ? 'w-5 h-5' : 'w-6 h-6'
-                  }`}
-                />
+                <Languages className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+                  {language === 'hi' ? 'भाषा' : 'Language'}
+                </span>
               </button>
 
               {/* Language Dropdown Menu */}
@@ -168,44 +189,26 @@ const MainLayout = () => {
               )}
             </div>
 
-            {/* Cart Icon with Animation */}
-            <Link to="/dashboard/cart" className="relative group">
-              <div className={`transition-all duration-300 ${cartAnimation ? 'animate-bounce' : ''}`}>
-                {currentItemCount > 0 ? (
-                  <ShoppingCart
-                    className={`text-gray-700 group-hover:text-green-600 transition-all duration-300 ${
-                      isScrolled ? 'w-5 h-5' : 'w-6 h-6'
-                    }`}
-                    fill="currentColor"
-                  />
-                ) : (
-                  <ShoppingCart
-                    className={`text-gray-700 group-hover:text-green-600 transition-all duration-300 ${
-                      isScrolled ? 'w-5 h-5' : 'w-6 h-6'
-                    }`}
-                  />
-                )}
-              </div>
-              {currentItemCount > 0 && (
-                <span className={`absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold transition-all duration-300 ${
-                  cartAnimation ? 'scale-125' : 'scale-100'
-                }`}>
-                  {currentItemCount}
-                </span>
-              )}
+            <Link
+              to="/landingPage"
+              className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group"
+            >
+              <Home className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+              <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+                {language === 'hi' ? 'होम' : 'Home'}
+              </span>
             </Link>
 
-            {/* Profile Icon with Dropdown */}
+            {/* Profile with Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="focus:outline-none group"
+                className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group focus:outline-none"
               >
-                <User
-                  className={`text-gray-700 group-hover:text-green-600 transition-all duration-300 ${
-                    isScrolled ? 'w-5 h-5' : 'w-6 h-6'
-                  }`}
-                />
+                <User className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+                  {language === 'hi' ? 'प्रोफ़ाइल' : 'Profile'}
+                </span>
               </button>
 
               {/* Dropdown Menu */}
@@ -258,15 +261,7 @@ const MainLayout = () => {
         <div className="flex justify-around py-3">
           <Link to="/landingPage" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors">
             <Home className="w-6 h-6" />
-            <span className="text-xs mt-1">Home</span>
-          </Link>
-          <Link to="/dashboard/farmers" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors">
-            <Users className="w-6 h-6" />
-            <span className="text-xs mt-1">Farmers</span>
-          </Link>
-          <Link to="/dashboard/requests" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors">
-            <ClipboardList className="w-6 h-6" />
-            <span className="text-xs mt-1">Requests</span>
+            <span className="text-xs mt-1">{language === 'hi' ? 'होम' : 'Home'}</span>
           </Link>
           <Link to="/dashboard/cart" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 relative transition-colors">
             <div className={`${cartAnimation ? 'animate-bounce' : ''}`}>
@@ -276,7 +271,7 @@ const MainLayout = () => {
                 <ShoppingCart className="w-6 h-6" />
               )}
             </div>
-            <span className="text-xs mt-1">Cart</span>
+            <span className="text-xs mt-1">{language === 'hi' ? 'कार्ट' : 'Cart'}</span>
             {currentItemCount > 0 && (
               <span className={`absolute -top-1 right-2 bg-green-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-semibold ${
                 cartAnimation ? 'scale-125' : 'scale-100'
@@ -285,13 +280,10 @@ const MainLayout = () => {
               </span>
             )}
           </Link>
-          <button
-            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-            className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
-          >
-            <User className="w-6 h-6" />
-            <span className="text-xs mt-1">Profile</span>
-          </button>
+          <Link to="/dashboard" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors">
+            <LayoutDashboard className="w-6 h-6" />
+            <span className="text-xs mt-1">{language === 'hi' ? 'डैशबोर्ड' : 'Dashboard'}</span>
+          </Link>
           <div className="relative" ref={mobileLanguageDropdownRef}>
             <button
               onClick={() => setShowMobileLanguageDropdown(!showMobileLanguageDropdown)}
@@ -332,7 +324,14 @@ const MainLayout = () => {
               </div>
             )}
           </div>
-        </div>
+        <button
+          onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+          className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
+        >
+          <User className="w-6 h-6" />
+          <span className="text-xs mt-1">{language === 'hi' ? 'प्रोफ़ाइल' : 'Profile'}</span>
+        </button>
+      </div>
       </div>
     </div>
   );

@@ -201,7 +201,7 @@ const Header = () => {
 
             {/* Login/Dashboard Button */}
             <Link
-              to={user ? "/app" : "/auth"}
+              to={user ? "/dashboard" : "/auth"}
               className={`bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 ${
                 isScrolled ? 'px-4 py-2 text-sm' : 'px-6 py-2.5 text-base'
               }`}

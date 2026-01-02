@@ -128,9 +128,6 @@ function App() {
                 <Route path="manage-products" element={<ManageProducts />} />
               </Route>
 
-              {/* Redirect /app to /dashboard for backward compatibility */}
-              <Route path="/app/*" element={<Navigate to="/dashboard" replace />} />
-
               <Route path="*" element={<NotFound />} />
             </Routes>
           </CartProvider>

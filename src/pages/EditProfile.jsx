@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import naturalFarmingProducts from '../data/natural-farming-products.json';
 
 const EditProfile = () => {
   const { t, language } = useLanguage();
-  const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 6;
 
-  // Form state for all steps
+  // Form state for all sections
   const [formData, setFormData] = useState({
     // Step 1: Basic Profile
     farmerName: '',
@@ -88,15 +87,31 @@ const EditProfile = () => {
     }
   };
 
+  // Get unique categories from natural-farming-products.json
+  const [productCategories, setProductCategories] = useState([]);
+  const [categoryProducts, setCategoryProducts] = useState({});
+
+  useEffect(() => {
+    // Extract unique categories
+    const categories = [...new Set(naturalFarmingProducts.map(p => p.category))];
+    setProductCategories(categories);
+
+    // Group products by category
+    const grouped = {};
+    naturalFarmingProducts.forEach(product => {
+      if (!grouped[product.category]) {
+        grouped[product.category] = [];
+      }
+      grouped[product.category].push(product);
+    });
+    setCategoryProducts(grouped);
+  }, []);
+
   const addProduct = () => {
     const newProduct = {
       id: Date.now(),
-      name: '',
       category: '',
-      price: '',
-      unit: 'kg',
-      availability: 'available',
-      organicTag: '',
+      name: '',
       images: []
     };
     setFormData(prev => ({
@@ -151,29 +166,15 @@ const EditProfile = () => {
     }));
   };
 
-  const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-      window.scrollTo(0, 0);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-      window.scrollTo(0, 0);
-    }
-  };
-
   const handleSubmit = () => {
     console.log('Form submitted:', formData);
     // TODO: Submit to backend
     alert(language === 'hi' ? 'प्रोफाइल सफलतापूर्वक सहेजी गई!' : 'Profile saved successfully!');
   };
 
-  // Step 1: Basic Profile Information
-  const renderStep1 = () => (
-    <div className="space-y-6">
+  // Section 1: Basic Profile Information
+  const renderSection1 = () => (
+    <div className="space-y-6 bg-white p-6 md:p-8 rounded-xl">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">
         {language === 'hi' ? '🧑‍🌾 बुनियादी जानकारी' : '🧑‍🌾 Basic Information'}
       </h2>
@@ -359,9 +360,9 @@ const EditProfile = () => {
     </div>
   );
 
-  // Step 2: Farm Story & Philosophy
-  const renderStep2 = () => (
-    <div className="space-y-6">
+  // Section 2: Farm Story & Philosophy
+  const renderSection2 = () => (
+    <div className="space-y-6 bg-green-50 p-6 md:p-8 rounded-xl">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">
         {language === 'hi' ? '📖 हमारी कहानी' : '📖 Our Story'}
       </h2>
@@ -423,9 +424,9 @@ const EditProfile = () => {
     </div>
   );
 
-  // Step 3: Farm Gallery
-  const renderStep3 = () => (
-    <div className="space-y-6">
+  // Section 3: Farm Gallery
+  const renderSection3 = () => (
+    <div className="space-y-6 bg-white p-6 md:p-8 rounded-xl">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">
         {language === 'hi' ? '🖼️ फार्म गैलरी' : '🖼️ Farm Gallery'}
       </h2>
@@ -493,9 +494,9 @@ const EditProfile = () => {
     </div>
   );
 
-  // Step 4: Products Management
-  const renderStep4 = () => (
-    <div className="space-y-6">
+  // Section 4: Products Management
+  const renderSection4 = () => (
+    <div className="space-y-6 bg-green-50 p-6 md:p-8 rounded-xl">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">
           {language === 'hi' ? '🥕 उत्पाद जोड़ें' : '🥕 Add Products'}
@@ -540,89 +541,46 @@ const EditProfile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {language === 'hi' ? 'उत्पाद का नाम *' : 'Product Name *'}
-                  </label>
-                  <input
-                    type="text"
-                    value={product.name}
-                    onChange={(e) => updateProduct(product.id, 'name', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder={language === 'hi' ? 'टमाटर, भिंडी, आदि' : 'Tomato, Okra, etc.'}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     {language === 'hi' ? 'श्रेणी *' : 'Category *'}
                   </label>
                   <select
                     value={product.category}
-                    onChange={(e) => updateProduct(product.id, 'category', e.target.value)}
+                    onChange={(e) => {
+                      updateProduct(product.id, 'category', e.target.value);
+                      updateProduct(product.id, 'name', ''); // Reset name when category changes
+                    }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   >
-                    <option value="">{language === 'hi' ? 'चुनें' : 'Select'}</option>
-                    <option value="vegetable">{language === 'hi' ? 'सब्जी' : 'Vegetable'}</option>
-                    <option value="leafy">{language === 'hi' ? 'पत्तेदार' : 'Leafy'}</option>
-                    <option value="root">{language === 'hi' ? 'जड़' : 'Root'}</option>
-                    <option value="fruit">{language === 'hi' ? 'फल' : 'Fruit'}</option>
+                    <option value="">{language === 'hi' ? 'श्रेणी चुनें' : 'Select Category'}</option>
+                    {productCategories.map(cat => (
+                      <option key={cat} value={cat}>
+                        {cat.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {language === 'hi' ? 'कीमत *' : 'Price *'}
-                  </label>
-                  <input
-                    type="number"
-                    value={product.price}
-                    onChange={(e) => updateProduct(product.id, 'price', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {language === 'hi' ? 'इकाई *' : 'Unit *'}
+                    {language === 'hi' ? 'उत्पाद का नाम *' : 'Product Name *'}
                   </label>
                   <select
-                    value={product.unit}
-                    onChange={(e) => updateProduct(product.id, 'unit', e.target.value)}
+                    value={product.name}
+                    onChange={(e) => updateProduct(product.id, 'name', e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    disabled={!product.category}
                   >
-                    <option value="kg">{language === 'hi' ? '₹ / किलो' : '₹ / kg'}</option>
-                    <option value="bundle">{language === 'hi' ? '₹ / गट्ठर' : '₹ / bundle'}</option>
-                    <option value="dozen">{language === 'hi' ? '₹ / दर्जन' : '₹ / dozen'}</option>
-                    <option value="piece">{language === 'hi' ? '₹ / पीस' : '₹ / piece'}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {language === 'hi' ? 'उपलब्धता *' : 'Availability *'}
-                  </label>
-                  <select
-                    value={product.availability}
-                    onChange={(e) => updateProduct(product.id, 'availability', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  >
-                    <option value="available">{language === 'hi' ? 'उपलब्ध है' : 'Available Now'}</option>
-                    <option value="coming_soon">{language === 'hi' ? 'जल्द आ रहा है' : 'Coming Soon'}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {language === 'hi' ? 'जैविक टैग *' : 'Organic Tag *'}
-                  </label>
-                  <select
-                    value={product.organicTag}
-                    onChange={(e) => updateProduct(product.id, 'organicTag', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  >
-                    <option value="">{language === 'hi' ? 'चुनें' : 'Select'}</option>
-                    <option value="certified">{language === 'hi' ? 'प्रमाणित जैविक' : 'Certified Organic'}</option>
-                    <option value="natural">{language === 'hi' ? 'प्राकृतिक रूप से उगाया' : 'Naturally Grown'}</option>
+                    <option value="">
+                      {!product.category
+                        ? (language === 'hi' ? 'पहले श्रेणी चुनें' : 'Select category first')
+                        : (language === 'hi' ? 'उत्पाद चुनें' : 'Select product')
+                      }
+                    </option>
+                    {product.category && categoryProducts[product.category]?.map(p => (
+                      <option key={p.id} value={p.name}>
+                        {p.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -633,9 +591,9 @@ const EditProfile = () => {
     </div>
   );
 
-  // Step 5: Certifications
-  const renderStep5 = () => (
-    <div className="space-y-6">
+  // Section 5: Certifications
+  const renderSection5 = () => (
+    <div className="space-y-6 bg-white p-6 md:p-8 rounded-xl">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-gray-800">
           {language === 'hi' ? '📜 प्रमाणपत्र' : '📜 Certifications'}
@@ -753,9 +711,9 @@ const EditProfile = () => {
     </div>
   );
 
-  // Step 6: Preview & Publish
-  const renderStep6 = () => (
-    <div className="space-y-6">
+  // Section 6: Preview & Publish
+  const renderSection6 = () => (
+    <div className="space-y-6 bg-green-50 p-6 md:p-8 rounded-xl">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">
         {language === 'hi' ? '✅ समीक्षा और प्रकाशित करें' : '✅ Review & Publish'}
       </h2>
@@ -833,34 +791,6 @@ const EditProfile = () => {
     </div>
   );
 
-  // Progress Bar
-  const renderProgressBar = () => (
-    <div className="mb-8">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-gray-700">
-          {language === 'hi' ? `चरण ${currentStep} / ${totalSteps}` : `Step ${currentStep} of ${totalSteps}`}
-        </span>
-        <span className="text-sm text-gray-500">
-          {Math.round((currentStep / totalSteps) * 100)}%
-        </span>
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-green-600 h-2 rounded-full transition-all duration-300"
-          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
-        />
-      </div>
-      <div className="flex justify-between mt-2 text-xs text-gray-500">
-        <span>{language === 'hi' ? 'बुनियादी' : 'Basic'}</span>
-        <span>{language === 'hi' ? 'कहानी' : 'Story'}</span>
-        <span>{language === 'hi' ? 'गैलरी' : 'Gallery'}</span>
-        <span>{language === 'hi' ? 'उत्पाद' : 'Products'}</span>
-        <span>{language === 'hi' ? 'प्रमाणपत्र' : 'Certs'}</span>
-        <span>{language === 'hi' ? 'समीक्षा' : 'Review'}</span>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -877,63 +807,48 @@ const EditProfile = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto p-6">
-        {renderProgressBar()}
+      {/* Main Content - All Sections in One Page */}
+      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
+        {/* Section 1: Basic Information - White Background */}
+        {renderSection1()}
 
-        <div className="bg-white rounded-xl shadow-sm p-6 md:p-8">
-          {/* Render current step */}
-          {currentStep === 1 && renderStep1()}
-          {currentStep === 2 && renderStep2()}
-          {currentStep === 3 && renderStep3()}
-          {currentStep === 4 && renderStep4()}
-          {currentStep === 5 && renderStep5()}
-          {currentStep === 6 && renderStep6()}
+        {/* Section 2: Farm Story - Light Green Background */}
+        {renderSection2()}
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
-            <button
-              onClick={prevStep}
-              disabled={currentStep === 1}
-              className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                currentStep === 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {language === 'hi' ? '← पिछला' : '← Previous'}
-            </button>
+        {/* Section 3: Farm Gallery - White Background */}
+        {renderSection3()}
 
-            {currentStep < totalSteps ? (
-              <button
-                onClick={nextStep}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
-              >
-                {language === 'hi' ? 'अगला →' : 'Next →'}
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={!formData.agreedToTerms}
-                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                  formData.agreedToTerms
-                    ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {language === 'hi' ? '✓ प्रकाशित करें' : '✓ Publish Profile'}
-              </button>
-            )}
+        {/* Section 4: Products - Light Green Background */}
+        {renderSection4()}
+
+        {/* Section 5: Certifications - White Background */}
+        {renderSection5()}
+
+        {/* Section 6: Review & Publish - Light Green Background */}
+        {renderSection6()}
+
+        {/* Submit Button */}
+        <div className="bg-white p-6 md:p-8 rounded-xl shadow-sm">
+          <button
+            onClick={handleSubmit}
+            disabled={!formData.agreedToTerms}
+            className={`w-full px-6 py-4 rounded-lg font-medium text-lg transition-colors ${
+              formData.agreedToTerms
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {language === 'hi' ? '✓ प्रोफाइल प्रकाशित करें' : '✓ Publish Profile'}
+          </button>
+          
+          {/* Auto-save indicator */}
+          <div className="text-center mt-4">
+            <p className="text-xs text-gray-500">
+              {language === 'hi'
+                ? '💾 आपका डेटा स्वचालित रूप से सहेजा जा रहा है'
+                : '💾 Your data is being auto-saved'}
+            </p>
           </div>
-        </div>
-
-        {/* Auto-save indicator */}
-        <div className="text-center mt-4">
-          <p className="text-xs text-gray-500">
-            {language === 'hi' 
-              ? '💾 आपका डेटा स्वचालित रूप से सहेजा जा रहा है' 
-              : '💾 Your data is being auto-saved'}
-          </p>
         </div>
       </div>
     </div>

@@ -15,59 +15,103 @@ export const AuthProvider = ({ children }) => {
   const [registerMutation] = useRegisterMutation();
 
   // Login function using RTK Query
-  const login = async (mobileNumber, password) => {
+  const login = async (mobile, password) => {
     try {
       const result = await loginMutation({
-        mobileNumber,
+        mobile,
         password,
       }).unwrap();
 
-      // Store token and user data
-      if (result.token) {
-        localStorage.setItem('token', result.token);
-        setToken(result.token);
+      console.log('Login API Response:', result);
+
+      // Handle the actual API response structure
+      const token = result.token;
+      const role = result.role || 'farmer';
+
+      // Store token
+      if (token) {
+        localStorage.setItem('token', token);
+        setToken(token);
+        console.log('Token stored:', token);
+      } else {
+        console.error('No token in response');
+        return {
+          success: false,
+          error: 'No token received from server'
+        };
       }
       
-      if (result.user) {
-        localStorage.setItem('user', JSON.stringify(result.user));
-        setUser(result.user);
-      }
+      // Create user object from response data
+      const userToStore = {
+        mobile: mobile,
+        role: role,
+        isAuthenticated: true
+      };
+      
+      localStorage.setItem('user', JSON.stringify(userToStore));
+      setUser(userToStore);
+      console.log('User stored:', userToStore);
+
+      // Navigate to dashboard after successful login
+      navigate('/dashboard', { replace: true });
 
       return { success: true, data: result };
     } catch (error) {
       console.error('Login error:', error);
-      return { 
-        success: false, 
-        error: error?.data?.message || 'Login failed. Please try again.' 
+      return {
+        success: false,
+        error: error?.data?.message || 'Login failed. Please try again.'
       };
     }
   };
 
   // Register function using RTK Query
-  const register = async (mobileNumber, password) => {
+  const register = async (mobile, password) => {
     try {
       const result = await registerMutation({
-        mobileNumber,
+        mobile,
         password,
       }).unwrap();
 
-      // Store token and user data
-      if (result.token) {
-        localStorage.setItem('token', result.token);
-        setToken(result.token);
+      console.log('Register API Response:', result);
+
+      // Handle the actual API response structure
+      const token = result.token;
+      const role = result.role || 'farmer';
+
+      // Store token
+      if (token) {
+        localStorage.setItem('token', token);
+        setToken(token);
+        console.log('Token stored:', token);
+      } else {
+        console.error('No token in response');
+        return {
+          success: false,
+          error: 'No token received from server'
+        };
       }
       
-      if (result.user) {
-        localStorage.setItem('user', JSON.stringify(result.user));
-        setUser(result.user);
-      }
+      // Create user object from response data
+      const userToStore = {
+        mobile: mobile,
+        role: role,
+        isAuthenticated: true
+      };
+      
+      localStorage.setItem('user', JSON.stringify(userToStore));
+      setUser(userToStore);
+      console.log('User stored:', userToStore);
+
+      // Navigate to dashboard after successful registration
+      navigate('/dashboard', { replace: true });
 
       return { success: true, data: result };
     } catch (error) {
       console.error('Registration error:', error);
-      return { 
-        success: false, 
-        error: error?.data?.message || 'Registration failed. Please try again.' 
+      return {
+        success: false,
+        error: error?.data?.message || 'Registration failed. Please try again.'
       };
     }
   };

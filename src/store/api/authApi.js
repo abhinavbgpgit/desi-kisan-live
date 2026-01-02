@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Base URL for API
-const BASE_URL = 'https://desi-basket-server.onrender.com/';
+const BASE_URL = 'https://node-backend-pz3j.onrender.com/';
 
 // Create API slice for authentication
 export const authApi = createApi({
@@ -26,9 +26,9 @@ export const authApi = createApi({
         url: 'api/register',
         method: 'POST',
         body: {
-          mobileNumber: credentials.mobileNumber,
+          mobile: credentials.mobile,
           password: credentials.password,
-          userType: 'FARMER', // Default user type as FARMER
+          role: 'farmer', // Default user type as FARMER
         },
       }),
       transformResponse: (response) => {
@@ -47,7 +47,7 @@ export const authApi = createApi({
         url: 'api/login',
         method: 'POST',
         body: {
-          mobileNumber: credentials.mobileNumber,
+          mobile: credentials.mobile,
           password: credentials.password,
         },
       }),

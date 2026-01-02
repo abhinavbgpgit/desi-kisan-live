@@ -2,7 +2,7 @@
   {
     "id": "nf_gobar_khad",
     "name": "गोबर की खाद (Cow Dung Manure)",
-    "category": "natural-fertilizers",
+    "category": "fertilizers",
     "subcategory": "manure",
     "image": "https://img1.wsimg.com/isteam/ip/0d720021-bfb8-4302-9fb3-8a4046a66085/7-57-1510558656-271367-khaskhabar.jpg",
     "description": "सड़ी हुई गोबर की खाद - 100% प्राकृतिक",
@@ -14,7 +14,7 @@
   {
     "id": "nf_vermicompost",
     "name": "वर्मी कम्पोस्ट (Vermicompost)",
-    "category": "natural-fertilizers",
+    "category": "fertilizers",
     "subcategory": "compost",
     "image": "https://cdn.shopify.com/s/files/1/0489/5922/6015/files/1_1_480x480.jpg?v=1640348271",
     "description": "केंचुआ खाद - मिट्टी के लिए सर्वोत्तम",
@@ -26,7 +26,7 @@
   {
     "id": "nf_jeevamrit",
     "name": "जीवामृत (Jeevamrit Liquid)",
-    "category": "natural-fertilizers",
+    "category": "fertilizers",
     "subcategory": "liquid",
     "image": "https://m.media-amazon.com/images/I/61HPZH7PqBL.jpg",
     "description": "तरल जैविक खाद - फसल वृद्धि के लिए",
@@ -74,7 +74,7 @@
   {
     "id": "nf_rhizobium",
     "name": "राइजोबियम कल्चर (Rhizobium)",
-    "category": "bio-fertilizers",
+    "category": "fertilizers",
     "subcategory": "culture",
     "image": "https://cpimg.tistatic.com/7610485/b/4/rhizobium-biofertilizer.png",
     "description": "दलहनी फसलों के लिए जैव उर्वरक",
@@ -86,7 +86,7 @@
   {
     "id": "nf_psb",
     "name": "PSB कल्चर (Phosphate Solubilizing Bacteria)",
-    "category": "bio-fertilizers",
+    "category": "fertilizers",
     "subcategory": "culture",
     "image": "https://www.greenplusagro.com/wp-content/uploads/2022/03/prod-Phosphate-Solubilising-430x538.jpg",
     "description": "फास्फेट घोलक जीवाणु",
@@ -146,7 +146,7 @@
   {
     "id": "nf_khurpi",
     "name": "खुरपी (Hand Hoe)",
-    "category": "farm-tools",
+    "category": "tools-machinery",
     "subcategory": "hand_tool",
     "image": "https://implemental.in/wp-content/uploads/2022/11/Iron-Large-Khurpa-with-Wooden-Handle-5.jpg",
     "description": "पारंपरिक खुरपी - मजबूत लोहे की",
@@ -158,7 +158,7 @@
   {
     "id": "nf_sickle",
     "name": "दरांती (Sickle)",
-    "category": "farm-tools",
+    "category": "tools-machinery",
     "subcategory": "hand_tool",
     "image": "https://cdnnew.toolsvilla.com/products-sickle-with-wooden-handle/1667388439401SD-HGT-2021475-2sickle.webp",
     "description": "फसल कटाई के लिए दरांती",
@@ -170,7 +170,7 @@
   {
     "id": "nf_hand_sprayer",
     "name": "हाथ स्प्रेयर (Hand Sprayer)",
-    "category": "small-machinery",
+    "category": "tools-machinery",
     "subcategory": "sprayer",
     "image": "https://image.made-in-china.com/202f0j00zEJksUOoCVqQ/Garden-Agriculture-Plastic-Plastic-Cropjet-Farmjet-Garden-Tool-Hand-Sanitizing-Sprayer.webp",
     "description": "16 लीटर हाथ से चलने वाला स्प्रेयर",
@@ -182,7 +182,7 @@
   {
     "id": "nf_battery_sprayer",
     "name": "बैटरी स्प्रेयर (Battery Sprayer)",
-    "category": "small-machinery",
+    "category": "tools-machinery",
     "subcategory": "sprayer",
     "image": "https://www.oem-india.com/wp-content/uploads/2023/07/oem-12v12a-18l-heavy-duty-battery-operated-knapsack-sprayer.jpg",
     "description": "12V बैटरी चालित स्प्रेयर",

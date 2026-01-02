@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.farmfresh.com/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://node-backend-pz3j.onrender.com',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -298,6 +298,58 @@ export const apiService = {
     
     // Map to product format
     return randomProducts.map(item => {
+      const randomFarmer = mockFarmers[Math.floor(Math.random() * mockFarmers.length)];
+      const basePrice = item.price || (Math.floor(Math.random() * 200) + 30);
+      
+      let unit;
+      switch(item.quantity_units) {
+        case 'kg':
+          unit = 'kg';
+          break;
+        case 'litre':
+          unit = 'liter';
+          break;
+        case 'dozen':
+          unit = 'dozen';
+          break;
+        case 'bundle':
+          unit = 'bundle';
+          break;
+        case 'piece':
+          unit = 'piece';
+          break;
+        case 'jar':
+          unit = 'jar';
+          break;
+        default:
+          unit = 'kg';
+      }
+      
+      return {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        category: item.category,
+        price: basePrice,
+        unit: unit,
+        images: [item.image],
+        isOrganic: item.local_only || false,
+        certification: item.local_only ? 'Local Certified' : 'Standard',
+        benefits: [
+          item.description,
+          item.local_only ? 'Locally sourced' : 'Fresh produce',
+          item.farmer_sold ? 'Farmer direct' : 'Quality assured'
+        ].filter(Boolean),
+        deliveryDays: ['Monday', 'Wednesday', 'Friday'],
+        stock: Math.floor(Math.random() * 100) + 20,
+        farmerId: randomFarmer.id
+      };
+    });
+  },
+
+  getProducts: async () => {
+    // Return all products from natural-farming-products.json
+    return naturalFarmingData.map(item => {
       const randomFarmer = mockFarmers[Math.floor(Math.random() * mockFarmers.length)];
       const basePrice = item.price || (Math.floor(Math.random() * 200) + 30);
       
