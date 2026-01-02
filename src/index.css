@@ -159,4 +159,14 @@
   .animate-bounce-down {
     animation: bounce-down 2s infinite;
   }
+
+  /* Hide scrollbar for category section */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
 }

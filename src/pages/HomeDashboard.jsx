@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { apiService as api } from '../services/api';
 import ProductCard from '../components/ProductCard';
+import CategoryCard from '../components/CategoryCard';
+import { categories } from '../data/categories';
 
 // Import dashboard button images
 import addProductImg from '../assets/dashboard_buttons/add_your_product .png';
@@ -19,7 +21,13 @@ const HomeDashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
+  const categoryScrollRef = useRef(null);
   const { getItemCount } = useCart();
   const { t } = useLanguage();
 
@@ -29,7 +37,7 @@ const HomeDashboard = () => {
         setLoading(true);
         const productsResponse = await api.getFeaturedProducts();
         setFeaturedProducts(productsResponse);
-        
+
         // Fetch all products for filtering
         const allProductsResponse = await api.getProducts();
         setAllProducts(allProductsResponse);
@@ -44,77 +52,123 @@ const HomeDashboard = () => {
     fetchData();
   }, []);
 
-  // Updated categories matching JSON data (9 categories)
-  const categories = [
-    {
-      name: t('categories.fertilizers') || 'खाद व उर्वरक',
-      nameEn: 'Fertilizers',
-      icon: "🌱",
-      slug: "fertilizers"
-    },
-    {
-      name: t('categories.bio_pesticides') || 'प्राकृतिक कीटनाशक',
-      nameEn: 'Bio Pesticides',
-      icon: "🛡️",
-      slug: "bio-pesticides"
-    },
-    {
-      name: t('categories.desi_seeds') || 'देसी बीज',
-      nameEn: 'Desi Seeds',
-      icon: "🌾",
-      slug: "desi-seeds"
-    },
-    {
-      name: t('categories.plants_saplings') || 'पौधे / नर्सरी',
-      nameEn: 'Plants & Saplings',
-      icon: "🌿",
-      slug: "plants-saplings"
-    },
-    {
-      name: t('categories.tools_machinery') || 'औज़ार व मशीनें',
-      nameEn: 'Tools & Machinery',
-      icon: "🔨",
-      slug: "tools-machinery"
-    },
-    {
-      name: t('categories.irrigation') || 'सिंचाई सामान',
-      nameEn: 'Irrigation Items',
-      icon: "💧",
-      slug: "irrigation"
-    },
-    {
-      name: t('categories.animal_care') || 'पशुपालन उत्पाद',
-      nameEn: 'Animal Care',
-      icon: "🐄",
-      slug: "animal-care"
-    },
-    {
-      name: t('categories.storage_packaging') || 'भंडारण व पैकिंग',
-      nameEn: 'Storage & Packaging',
-      icon: "📦",
-      slug: "storage-packaging"
-    },
-    {
-      name: t('categories.training_services') || 'प्रशिक्षण व सेवाएँ',
-      nameEn: 'Training & Services',
-      icon: "📚",
-      slug: "training-services"
-    },
-  ];
-
   // Handle category click
-  const handleCategoryClick = (categorySlug) => {
-    if (selectedCategory === categorySlug) {
+  const handleCategoryClick = (categoryId) => {
+    if (isDragging) return; // Prevent click when dragging
+    
+    if (selectedCategory === categoryId) {
       // If same category clicked, reset to show all
       setSelectedCategory(null);
       setFilteredProducts([]);
     } else {
       // Filter products by category
-      setSelectedCategory(categorySlug);
-      const filtered = allProducts.filter(product => product.category === categorySlug);
-      setFilteredProducts(filtered);
+      setSelectedCategory(categoryId);
+      const category = categories.find(c => c.id === categoryId);
+      if (category) {
+        const categorySlug = category.route.split('/').pop();
+        const filtered = allProducts.filter(product => product.category === categorySlug);
+        setFilteredProducts(filtered);
+      }
     }
   };
+
+  // Check scroll position and update arrow visibility
+  const checkScrollPosition = () => {
+    if (categoryScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+      const isScrollable = scrollWidth > clientWidth;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(isScrollable && scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  // Scroll categories left/right
+  const scrollCategories = (direction) => {
+    if (categoryScrollRef.current) {
+      const scrollAmount = 300;
+      const newScrollLeft = direction === 'left'
+        ? categoryScrollRef.current.scrollLeft - scrollAmount
+        : categoryScrollRef.current.scrollLeft + scrollAmount;
+      
+      categoryScrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Drag to scroll functionality
+  const handleMouseDown = (e) => {
+    if (!categoryScrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - categoryScrollRef.current.offsetLeft);
+    setScrollLeft(categoryScrollRef.current.scrollLeft);
+    // Prevent text selection while dragging
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || !categoryScrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - categoryScrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // Scroll speed multiplier
+    categoryScrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  // Touch events for mobile drag
+  const handleTouchStart = (e) => {
+    if (!categoryScrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - categoryScrollRef.current.offsetLeft);
+    setScrollLeft(categoryScrollRef.current.scrollLeft);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging || !categoryScrollRef.current) return;
+    const x = e.touches[0].pageX - categoryScrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    categoryScrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
+  // Add scroll listener and check on mount and when categories change
+  useEffect(() => {
+    const scrollContainer = categoryScrollRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', checkScrollPosition);
+      
+      // Multiple checks to ensure arrows appear correctly
+      const timer1 = setTimeout(() => checkScrollPosition(), 100);
+      const timer2 = setTimeout(() => checkScrollPosition(), 300);
+      const timer3 = setTimeout(() => checkScrollPosition(), 500);
+      
+      return () => {
+        scrollContainer.removeEventListener('scroll', checkScrollPosition);
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+        clearTimeout(timer3);
+      };
+    }
+  }, [categories]);
+
+  // Additional check when loading completes
+  useEffect(() => {
+    if (!loading && categoryScrollRef.current) {
+      const timer = setTimeout(() => checkScrollPosition(), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   if (loading) {
     return (
@@ -235,7 +289,7 @@ const HomeDashboard = () => {
 
           {/* View Orders Card */}
           <Link
-            to="/dashboard/orders"
+            to="/dashboard/requests"
             className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group hover:scale-105"
           >
             <div className="aspect-square relative">
@@ -295,21 +349,60 @@ const HomeDashboard = () => {
       {/* Categories */}
       <div className="p-4">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('shop_by_category') || '🌱 Natural Farming Categories'}</h2>
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {categories.map((category) => (
+        <div className="relative">
+          {/* Left Arrow */}
+          {showLeftArrow && (
             <button
-              key={category.slug}
-              onClick={() => handleCategoryClick(category.slug)}
-              className={`bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-all hover:scale-105 flex-shrink-0 w-32 border-2 ${
-                selectedCategory === category.slug
-                  ? 'border-green-500 bg-green-50'
-                  : 'border-gray-100'
-              }`}
+              onClick={() => scrollCategories('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 md:p-3 transition-all hover:scale-110"
+              aria-label="Scroll left"
             >
-              <div className="text-3xl mb-2">{category.icon}</div>
-              <div className="text-xs font-medium text-gray-700 line-clamp-2">{category.name}</div>
+              <svg className="w-5 h-5 md:w-6 md:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
             </button>
-          ))}
+          )}
+
+          {/* Categories Container */}
+          <div
+            ref={categoryScrollRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className={`flex gap-3 md:gap-4 overflow-x-auto ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch',
+              userSelect: 'none'
+            }}
+          >
+            {categories.map((category) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                onClick={() => handleCategoryClick(category.id)}
+                isSelected={selectedCategory === category.id}
+              />
+            ))}
+          </div>
+
+          {/* Right Arrow */}
+          {showRightArrow && (
+            <button
+              onClick={() => scrollCategories('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white shadow-lg rounded-full p-2 md:p-3 transition-all hover:scale-110"
+              aria-label="Scroll right"
+            >
+              <svg className="w-5 h-5 md:w-6 md:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -318,7 +411,7 @@ const HomeDashboard = () => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-gray-800">
             {selectedCategory
-              ? `${categories.find(c => c.slug === selectedCategory)?.name || ''} - ${filteredProducts.length} ${t('products') || 'Products'}`
+              ? `${categories.find(c => c.id === selectedCategory)?.name || ''} - ${filteredProducts.length} ${t('products') || 'Products'}`
               : t('featured_this_week')
             }
           </h2>
