@@ -24,9 +24,12 @@ export const AuthProvider = ({ children }) => {
 
       console.log('Login API Response:', result);
 
-      // Handle the actual API response structure
+      // Handle the actual API response structure - user data is nested in result.user
       const token = result.token;
-      const role = result.role || 'farmer';
+      const userData = result.user || {};
+      const role = userData.role || result.role || 'farmer';
+      const firstName = userData.first_name || userData.firstName || '';
+      const lastName = userData.last_name || userData.lastName || '';
 
       // Store token
       if (token) {
@@ -41,10 +44,12 @@ export const AuthProvider = ({ children }) => {
         };
       }
       
-      // Create user object from response data
+      // Create user object from response data with first_name and last_name
       const userToStore = {
         mobile: mobile,
         role: role,
+        first_name: firstName,
+        last_name: lastName,
         isAuthenticated: true
       };
       

@@ -10,6 +10,7 @@ import desiLogo from '../assets/desi_logo.png';
 const MainLayout = () => {
   const { getItemCount, cartChanged, setCartChanged } = useCart();
   const { language, setLanguage, t } = useLanguage();
+  const { user, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
@@ -19,9 +20,16 @@ const MainLayout = () => {
   const languageDropdownRef = useRef(null);
   const mobileLanguageDropdownRef = useRef(null);
   const navigate = useNavigate();
-  const { logout } = useAuth();
 
   const currentItemCount = getItemCount();
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user || !user.first_name || !user.last_name) return '';
+    const firstInitial = user.first_name.charAt(0).toUpperCase();
+    const lastInitial = user.last_name.charAt(0).toUpperCase();
+    return `${firstInitial}${lastInitial}`;
+  };
 
   // Scroll effect
   useEffect(() => {
@@ -205,9 +213,17 @@ const MainLayout = () => {
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                 className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group focus:outline-none"
               >
-                <User className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                {getUserInitials() ? (
+                  <div className={`rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
+                    isScrolled ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
+                  }`}>
+                    {getUserInitials()}
+                  </div>
+                ) : (
+                  <User className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                )}
                 <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
-                  {language === 'hi' ? 'प्रोफ़ाइल' : 'Profile'}
+                  {user?.first_name || (language === 'hi' ? 'प्रोफ़ाइल' : 'Profile')}
                 </span>
               </button>
 
@@ -328,8 +344,14 @@ const MainLayout = () => {
           onClick={() => setShowProfileDropdown(!showProfileDropdown)}
           className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
         >
-          <User className="w-6 h-6" />
-          <span className="text-xs mt-1">{language === 'hi' ? 'प्रोफ़ाइल' : 'Profile'}</span>
+          {getUserInitials() ? (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
+              {getUserInitials()}
+            </div>
+          ) : (
+            <User className="w-6 h-6" />
+          )}
+          <span className="text-xs mt-1">{user?.first_name || (language === 'hi' ? 'प्रोफ़ाइल' : 'Profile')}</span>
         </button>
       </div>
       </div>

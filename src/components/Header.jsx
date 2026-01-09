@@ -13,6 +13,14 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (!user || !user.first_name || !user.last_name) return '';
+    const firstInitial = user.first_name.charAt(0).toUpperCase();
+    const lastInitial = user.last_name.charAt(0).toUpperCase();
+    return `${firstInitial}${lastInitial}`;
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -186,7 +194,7 @@ const Header = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             className="flex items-center space-x-3"
-          >          
+          >
            
             {/* Language Switcher */}
             <button
@@ -199,18 +207,29 @@ const Header = () => {
               <span className="text-sm">{language === 'en' ? 'हिंदी' : 'English'}</span>
             </button>
 
-            {/* Login/Dashboard Button */}
-            <Link
-              to={user ? "/dashboard" : "/auth"}
-              className={`bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 ${
-                isScrolled ? 'px-4 py-2 text-sm' : 'px-6 py-2.5 text-base'
-              }`}
-            >
-              {user
-                ? (language === 'hi' ? 'डैशबोर्ड' : 'Dashboard')
-                : (language === 'hi' ? 'लॉगिन' : 'Login')
-              }
-            </Link>
+            {/* Profile/Login Section */}
+            {user ? (
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-200"
+              >
+                <span className="hidden sm:inline text-gray-700 font-medium">
+                  {language === 'hi' ? 'प्रोफ़ाइल' : 'Profile'}
+                </span>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                  {getUserInitials()}
+                </div>
+              </Link>
+            ) : (
+              <Link
+                to="/auth"
+                className={`bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 ${
+                  isScrolled ? 'px-4 py-2 text-sm' : 'px-6 py-2.5 text-base'
+                }`}
+              >
+                {language === 'hi' ? 'लॉगिन' : 'Login'}
+              </Link>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -305,7 +324,7 @@ const Header = () => {
               </nav>
             </motion.div>
           )}
-        </AnimatePresence>
+        </AnimatePresence>       
       </div>
     </header>
   );
