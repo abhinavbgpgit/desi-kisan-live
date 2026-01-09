@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Base URL for API
-const BASE_URL = 'https://node-backend-pz3j.onrender.com/';
+const BASE_URL = 'https://node-backend-pz3j.onrender.com/api/';
 
 // Create API slice for authentication
 export const authApi = createApi({
@@ -23,12 +23,14 @@ export const authApi = createApi({
     // Register endpoint
     register: builder.mutation({
       query: (credentials) => ({
-        url: 'api/register',
+        url: 'auth/register',
         method: 'POST',
         body: {
           mobile: credentials.mobile,
           password: credentials.password,
-          role: 'farmer', // Default user type as FARMER
+          first_name: credentials.first_name,
+          last_name: credentials.last_name,
+          role: credentials.role || 'farmer', // Default to farmer if not provided
         },
       }),
       transformResponse: (response) => {
@@ -44,7 +46,7 @@ export const authApi = createApi({
     // Login endpoint
     login: builder.mutation({
       query: (credentials) => ({
-        url: 'api/login',
+        url: 'auth/login',
         method: 'POST',
         body: {
           mobile: credentials.mobile,

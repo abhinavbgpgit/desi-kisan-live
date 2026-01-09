@@ -20,12 +20,9 @@ const EditProfile = () => {
     coverPhoto: null,
     experience: '',
     farmSize: '',
-    specialities: [],
 
     // Step 2: Story
     journey: '',
-    philosophy: '',
-    farmingMethods: [],
 
     // Step 3: Gallery
     galleryPhotos: [],
@@ -39,22 +36,6 @@ const EditProfile = () => {
     // Step 6: Review
     agreedToTerms: false
   });
-
-  const specialityOptions = [
-    { value: 'organic_vegetables', label: language === 'hi' ? 'जैविक सब्जियां' : 'Organic Vegetables' },
-    { value: 'leafy_greens', label: language === 'hi' ? 'पत्तेदार सब्जियां' : 'Leafy Greens' },
-    { value: 'root_vegetables', label: language === 'hi' ? 'जड़ वाली सब्जियां' : 'Root Vegetables' },
-    { value: 'fruits', label: language === 'hi' ? 'फल' : 'Fruits' },
-    { value: 'dairy', label: language === 'hi' ? 'डेयरी' : 'Dairy' },
-    { value: 'poultry', label: language === 'hi' ? 'मुर्गी पालन' : 'Poultry' }
-  ];
-
-  const farmingMethodOptions = [
-    { value: 'organic', label: language === 'hi' ? '100% जैविक' : '100% Organic' },
-    { value: 'natural', label: language === 'hi' ? 'प्राकृतिक खेती' : 'Natural Farming' },
-    { value: 'chemical_free', label: language === 'hi' ? 'रसायन मुक्त' : 'Chemical-free' },
-    { value: 'desi_beej', label: language === 'hi' ? 'देसी बीज' : 'Desi Beej' }
-  ];
 
   const stateOptions = [
     'Bihar', 'Uttar Pradesh', 'Madhya Pradesh', 'Rajasthan', 'Punjab', 
@@ -338,25 +319,6 @@ const EditProfile = () => {
           <p className="text-sm text-green-600 mt-2">✓ {formData.coverPhoto.name}</p>
         )}
       </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
-          {language === 'hi' ? 'विशेषता (एक या अधिक चुनें)' : 'Speciality (Select one or more)'}
-        </label>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {specialityOptions.map(option => (
-            <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.specialities.includes(option.value)}
-                onChange={() => handleMultiSelect('specialities', option.value)}
-                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-              />
-              <span className="text-sm text-gray-700">{option.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
     </div>
   );
 
@@ -386,40 +348,6 @@ const EditProfile = () => {
             ? 'अपनी खेती की कहानी, अनुभव और सफर के बारे में बताएं' 
             : 'Share your farming story, experience and journey'}
         </p>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {language === 'hi' ? 'जैविक दर्शन / विचार' : 'Organic Philosophy / Quote'}
-        </label>
-        <textarea
-          value={formData.philosophy}
-          onChange={(e) => handleInputChange('philosophy', e.target.value)}
-          rows="3"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          placeholder={language === 'hi' 
-            ? 'प्रकृति के साथ, प्रकृति के लिए' 
-            : 'With nature, for nature'}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
-          {language === 'hi' ? 'खेती की विधि (एक या अधिक चुनें) *' : 'Farming Method (Select one or more) *'}
-        </label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {farmingMethodOptions.map(option => (
-            <label key={option.value} className="flex items-center space-x-2 cursor-pointer p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
-              <input
-                type="checkbox"
-                checked={formData.farmingMethods.includes(option.value)}
-                onChange={() => handleMultiSelect('farmingMethods', option.value)}
-                className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-              />
-              <span className="text-sm text-gray-700">{option.label}</span>
-            </label>
-          ))}
-        </div>
       </div>
     </div>
   );
@@ -743,10 +671,6 @@ const EditProfile = () => {
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'अनुभव:' : 'Experience:'}</span>
             <span className="font-medium">{formData.experience ? `${formData.experience} ${language === 'hi' ? 'वर्ष' : 'years'}` : '-'}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">{language === 'hi' ? 'विशेषताएं:' : 'Specialities:'}</span>
-            <span className="font-medium">{formData.specialities.length || 0}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'गैलरी तस्वीरें:' : 'Gallery Photos:'}</span>

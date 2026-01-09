@@ -10,6 +10,8 @@ const AuthNew = () => {
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -22,9 +24,7 @@ const AuthNew = () => {
     return /^[6-9]\d{9}$/.test(number);
   };
 
-  const validatePassword = (pass) => {
-    return pass.length >= 6;
-  };
+  // Remove password length validation as per new requirements
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,10 +36,7 @@ const AuthNew = () => {
       return;
     }
 
-    if (!validatePassword(password)) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
+    // No password length validation
 
     if (!isLogin && password !== confirmPassword) {
       setError('Passwords do not match');
@@ -56,7 +53,7 @@ const AuthNew = () => {
         result = await login(mobile, password);
       } else {
         // Register using AuthContext
-        result = await register(mobile, password);
+        result = await register(mobile, password, firstName, lastName);
       }
 
       if (result.success) {
@@ -80,6 +77,11 @@ const AuthNew = () => {
     setError('');
     setPassword('');
     setConfirmPassword('');
+    // Reset first and last name on mode toggle
+    if (!isLogin) {
+      setFirstName('');
+      setLastName('');
+    }
   };
 
   return (
@@ -89,7 +91,7 @@ const AuthNew = () => {
           {/* Left side - Visual content */}
           <div className="lg:w-1/2 bg-gradient-to-br from-green-600 to-emerald-700 p-8 lg:p-12 flex flex-col justify-center items-center text-white">
             <img src={desiLogoInverted} alt="Desi Basket Logo" className="w-72 h-20 mb-4" />
-            <h1 className="text-3xl lg:text-4xl font-bold mb-4 text-center">Welcome to Desi Basket</h1>
+            <h1 className="text-3xl lg:text-4xl font-bold mb-4 text-center">Welcome to Desi Kisan</h1>
             <p className="text-center text-green-100 mb-8 max-w-sm">
               Experience the freshest produce directly from local farmers to your doorstep.
             </p>
@@ -122,6 +124,39 @@ const AuthNew = () => {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* First Name and Last Name (Registration only) */}
+                {!isLogin && (
+                  <div className="flex space-x-4">
+                    <div className="flex-1">
+                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                        First Name
+                      </label>
+                      <input
+                        type="text"
+                        id="firstName"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="First Name"
+                        className="w-full h-12 px-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 focus:outline-none"
+                        required
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        id="lastName"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Last Name"
+                        className="w-full h-12 px-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 focus:outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
                 {/* Mobile Number */}
                 <div>
                   <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">

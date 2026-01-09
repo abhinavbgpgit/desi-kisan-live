@@ -66,47 +66,28 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Register function using RTK Query
-  const register = async (mobile, password) => {
+  const register = async (mobile, password, firstName, lastName) => {
     try {
       const result = await registerMutation({
         mobile,
         password,
+        first_name: firstName,
+        last_name: lastName,
+        role: 'farmer',
       }).unwrap();
 
       console.log('Register API Response:', result);
 
-      // Handle the actual API response structure
-      const token = result.token;
-      const role = result.role || 'farmer';
-
-      // Store token
-      if (token) {
-        localStorage.setItem('token', token);
-        setToken(token);
-        console.log('Token stored:', token);
+      // If registration is successful, immediately log in the user
+      if (result && result.success !== false) {
+        // Auto-login with the same credentials
+        return await login(mobile, password);
       } else {
-        console.error('No token in response');
         return {
           success: false,
-          error: 'No token received from server'
+          error: result?.message || 'Registration failed. Please try again.'
         };
       }
-      
-      // Create user object from response data
-      const userToStore = {
-        mobile: mobile,
-        role: role,
-        isAuthenticated: true
-      };
-      
-      localStorage.setItem('user', JSON.stringify(userToStore));
-      setUser(userToStore);
-      console.log('User stored:', userToStore);
-
-      // Navigate to dashboard after successful registration
-      navigate('/dashboard', { replace: true });
-
-      return { success: true, data: result };
     } catch (error) {
       console.error('Registration error:', error);
       return {
