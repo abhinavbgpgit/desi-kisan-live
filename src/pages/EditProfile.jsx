@@ -2,69 +2,148 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import naturalFarmingProducts from '../data/natural-farming-products.json';
+import { useGetProductsQuery, useAddFarmerProductMutation } from '../store/api/productsApi';
+import { useUploadMediaMutation } from '../store/api/mediaApi';
+import { useUpdateMyFarmerProfileMutation } from '../store/api/farmerApi';
 
 const EditProfile = () => {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
 
-  // Form state for all sections
-  const [formData, setFormData] = useState({
-    // Step 1: Basic Profile
-    farmerName: '',
-    farmName: '',
-    village: '',
-    district: '',
-    state: '',
-    mobile: '',
-    whatsapp: '',
-    profilePhoto: null,
-    coverPhoto: null,
-    experience: '',
-    farmSize: '',
+  // Fetch all products using RTK Query
+  const { data, isLoading, isError } = useGetProductsQuery();
+  const allProducts = data?.data ?? [];
+  const [uploadMedia, { isLoading: isUploadingMedia }] = useUploadMediaMutation();
+  const [updateProfile, { isLoadingProfile, error }] = useUpdateMyFarmerProfileMutation();
 
-    // Step 2: Story
-    journey: '',
+  // Log all products to console when they're loaded
+  useEffect(() => {
+    if (allProducts) {
+      console.log('All products fetched in EditProfile:', allProducts);
+    }
+  }, [allProducts]);
 
-    // Step 3: Gallery
-    galleryPhotos: [],
+  // Initialize form data from localStorage and API data
+  const STORAGE_KEY = 'farmer_edit_profile_form';
+  const [formData, setFormData] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
 
-    // Step 4: Products
-    products: [],
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
 
-    // Step 5: Certifications
-    certifications: [],
-
-    // Step 6: Review
-    agreedToTerms: false
+    return {
+      farmerName: '',
+      farmName: '',
+      village: '',
+      district: '',
+      state: '',
+      mobile: '',
+      whatsapp: '',
+      profilePhoto: null, // { media_id, url }
+      coverPhoto: null, // { media_id, url }
+      experience: '',
+      farmSize: '',
+      journey: '',
+      galleryPhotos: [], // [{ media_id, url }]
+      products: [],
+      certifications: [],
+      agreedToTerms: false,
+    };
   });
 
   const stateOptions = [
-    'Bihar', 'Uttar Pradesh', 'Madhya Pradesh', 'Rajasthan', 'Punjab', 
-    'Haryana', 'Maharashtra', 'Gujarat', 'West Bengal', 'Jharkhand'
+    'Bihar',
+    'Uttar Pradesh',
+    'Madhya Pradesh',
+    'Rajasthan',
+    'Punjab',
+    'Haryana',
+    'Maharashtra',
+    'Gujarat',
+    'West Bengal',
+    'Jharkhand',
   ];
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleMultiSelect = (field, value) => {
-    setFormData(prev => {
-      const currentValues = prev[field];
-      const newValues = currentValues.includes(value)
-        ? currentValues.filter(v => v !== value)
-        : [...currentValues, value];
-      return { ...prev, [field]: newValues };
-    });
-  };
+  // Removed unused handleMultiSelect function
 
-  const handleFileUpload = (field, files) => {
+  const handleFileUpload = async (field, files) => {
     if (field === 'galleryPhotos') {
-      const newPhotos = Array.from(files).slice(0, 20 - formData.galleryPhotos.length);
-      setFormData(prev => ({
+      // Process each file and upload to media API
+      const uploadPromises = Array.from(files)
+        .slice(0, 20 - formData.galleryPhotos.length)
+        .map(async (file) => {
+          try {
+            // Upload the file using the media API
+            const result = await uploadMedia({ file, entityType: 'gallery', entityId: null });
+
+            // Store the media details (ID and secure URL) in an object
+            return {
+              id: result.data.id, // Assuming the response contains an ID
+              secure_url: result.data.secure_url, // Assuming the response contains a secure URL
+              file: file, // Keep reference to the original file for display purposes
+              fileName: file.name,
+              fileSize: file.size,
+              fileType: file.type,
+            };
+          } catch (error) {
+            console.error('Error uploading file:', error);
+            // If upload fails, still store the file info but mark as failed
+            return {
+              id: null,
+              secure_url: null,
+              file: file,
+              fileName: file.name,
+              fileSize: file.size,
+              fileType: file.type,
+              uploadError: error.message,
+            };
+          }
+        });
+
+      // Wait for all uploads to complete
+      const uploadedFiles = await Promise.all(uploadPromises);
+
+      // Update form data with the uploaded file objects
+      setFormData((prev) => ({
         ...prev,
-        galleryPhotos: [...prev.galleryPhotos, ...newPhotos]
+        galleryPhotos: [...prev.galleryPhotos, ...uploadedFiles],
       }));
     } else {
-      setFormData(prev => ({ ...prev, [field]: files[0] }));
+      // For single file uploads (profilePhoto, coverPhoto), upload directly
+      const file = files[0];
+      try {
+        const result = await uploadMedia({
+          file,
+          entityType: field,
+          entityId: null,
+        }).unwrap();
+
+        const imageData = {
+          media_id: result.data.media_id,
+          secure_url: result.data.secure_url,
+        };
+
+        setFormData((prev) => ({
+          ...prev,
+          [field]: imageData,
+        }));
+
+        // Save to localStorage for persistence
+        if (field === 'profilePhoto' || field === 'coverPhoto') {
+          localStorage.setItem(field, JSON.stringify(result));
+        }
+      } catch (error) {
+        console.error(`Error uploading ${field}:`, error);
+        // setFormData((prev) => ({ ...prev, [field]: file })); // fallback to original file
+      }
     }
   };
 
@@ -74,46 +153,50 @@ const EditProfile = () => {
 
   useEffect(() => {
     // Extract unique categories
-    const categories = [...new Set(naturalFarmingProducts.map(p => p.category))];
+    const categories = [...new Set(allProducts?.map((p) => p.category))];
     setProductCategories(categories);
 
     // Group products by category
     const grouped = {};
-    naturalFarmingProducts.forEach(product => {
+    allProducts?.forEach((product) => {
       if (!grouped[product.category]) {
         grouped[product.category] = [];
       }
       grouped[product.category].push(product);
     });
     setCategoryProducts(grouped);
-  }, []);
+  }, [allProducts]);
 
   const addProduct = () => {
     const newProduct = {
       id: Date.now(),
       category: '',
       name: '',
-      images: []
+      images: [],
     };
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      products: [...prev.products, newProduct]
+      products: [...prev.products, newProduct],
     }));
   };
 
   const updateProduct = (id, field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      products: prev.products.map(p => 
-        p.id === id ? { ...p, [field]: value } : p
-      )
+      products: prev.products.map((p) => (p.id === id ? { ...p, [field]: value } : p)),
     }));
   };
 
+  useEffect(() => {
+    return () => {
+      console.log('Form Data Updated:', formData);
+    };
+  }, [formData]);
+
   const removeProduct = (id) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      products: prev.products.filter(p => p.id !== id)
+      products: prev.products.filter((p) => p.id !== id),
     }));
   };
 
@@ -123,33 +206,56 @@ const EditProfile = () => {
       type: '',
       number: '',
       image: null,
-      validTill: ''
+      validTill: '',
     };
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      certifications: [...prev.certifications, newCert]
+      certifications: [...prev.certifications, newCert],
     }));
   };
 
   const updateCertification = (id, field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      certifications: prev.certifications.map(c => 
-        c.id === id ? { ...c, [field]: value } : c
-      )
+      certifications: prev.certifications.map((c) => (c.id === id ? { ...c, [field]: value } : c)),
     }));
   };
 
   const removeCertification = (id) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      certifications: prev.certifications.filter(c => c.id !== id)
+      certifications: prev.certifications.filter((c) => c.id !== id),
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('Form submitted:', formData);
-    // TODO: Submit to backend
+
+    // Prepare form data for submission, extracting only the secure_url for images
+    const submitData = {
+      ...formData,
+      profilePhoto: formData.profilePhoto ? formData.profilePhoto.secure_url : null,
+      coverPhoto: formData.coverPhoto ? formData.coverPhoto.secure_url : null,
+      // Remove the file objects as they shouldn't be sent to the backend
+      galleryPhotos: formData.galleryPhotos.map((photo) => ({
+        id: photo.id,
+        secure_url: photo.secure_url,
+      })),
+      certifications: formData.certifications.map((cert) => ({
+        ...cert,
+        image: cert.image ? (typeof cert.image === 'object' ? cert.image.secure_url : cert.image) : null,
+      })),
+    };
+
+    try {
+      const res = await updateProfile(submitData).unwrap();
+      console.log('Updated:', res);
+      // Clear localStorage after successful submission
+      localStorage.removeItem('profilePhoto');
+      localStorage.removeItem('coverPhoto');
+    } catch (err) {
+      console.error('Update failed:', err);
+    }
     alert(language === 'hi' ? 'प्रोफाइल सफलतापूर्वक सहेजी गई!' : 'Profile saved successfully!');
   };
 
@@ -228,8 +334,10 @@ const EditProfile = () => {
             required
           >
             <option value="">{language === 'hi' ? 'राज्य चुनें' : 'Select State'}</option>
-            {stateOptions.map(state => (
-              <option key={state} value={state}>{state}</option>
+            {stateOptions.map((state) => (
+              <option key={state} value={state}>
+                {state}
+              </option>
             ))}
           </select>
         </div>
@@ -301,7 +409,16 @@ const EditProfile = () => {
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
         {formData.profilePhoto && (
-          <p className="text-sm text-green-600 mt-2">✓ {formData.profilePhoto.name}</p>
+          <div className="mt-2 flex items-center gap-2">
+            <img
+              src={formData.profilePhoto.secure_url || formData.profilePhoto}
+              alt="Profile preview"
+              className="w-16 h-16 rounded-full object-cover border-2 border-green-500"
+            />
+            <p className="text-sm text-green-600">
+              ✓ {formData.profilePhoto.fileName || formData.profilePhoto.name || 'Profile photo uploaded'}
+            </p>
+          </div>
         )}
       </div>
 
@@ -316,7 +433,16 @@ const EditProfile = () => {
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
         {formData.coverPhoto && (
-          <p className="text-sm text-green-600 mt-2">✓ {formData.coverPhoto.name}</p>
+          <div className="mt-2 flex items-center gap-2">
+            <img
+              src={formData.coverPhoto.secure_url || formData.coverPhoto}
+              alt="Cover preview"
+              className="w-16 h-16 rounded object-cover border-2 border-green-500"
+            />
+            <p className="text-sm text-green-600">
+              ✓ {formData.coverPhoto.fileName || formData.coverPhoto.name || 'Cover photo uploaded'}
+            </p>
+          </div>
         )}
       </div>
     </div>
@@ -325,9 +451,7 @@ const EditProfile = () => {
   // Section 2: Farm Story & Philosophy
   const renderSection2 = () => (
     <div className="space-y-6 bg-green-50 p-6 md:p-8 rounded-xl">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        {language === 'hi' ? '📖 हमारी कहानी' : '📖 Our Story'}
-      </h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">{language === 'hi' ? '📖 हमारी कहानी' : '📖 Our Story'}</h2>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -338,14 +462,16 @@ const EditProfile = () => {
           onChange={(e) => handleInputChange('journey', e.target.value)}
           rows="8"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          placeholder={language === 'hi' 
-            ? 'हम पिछले 15 सालों से बिना रसायन की खेती कर रहे हैं...' 
-            : 'We have been farming without chemicals for the past 15 years...'}
+          placeholder={
+            language === 'hi'
+              ? 'हम पिछले 15 सालों से बिना रसायन की खेती कर रहे हैं...'
+              : 'We have been farming without chemicals for the past 15 years...'
+          }
           required
         />
         <p className="text-xs text-gray-500 mt-1">
-          {language === 'hi' 
-            ? 'अपनी खेती की कहानी, अनुभव और सफर के बारे में बताएं' 
+          {language === 'hi'
+            ? 'अपनी खेती की कहानी, अनुभव और सफर के बारे में बताएं'
             : 'Share your farming story, experience and journey'}
         </p>
       </div>
@@ -361,13 +487,13 @@ const EditProfile = () => {
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <p className="text-sm text-blue-800">
-          {language === 'hi' 
-            ? '📸 कम से कम 5 तस्वीरें और अधिकतम 20 तस्वीरें अपलोड करें' 
+          {language === 'hi'
+            ? '📸 कम से कम 5 तस्वीरें और अधिकतम 20 तस्वीरें अपलोड करें'
             : '📸 Upload minimum 5 photos and maximum 20 photos'}
         </p>
         <p className="text-xs text-blue-600 mt-1">
-          {language === 'hi' 
-            ? 'खेत, फसल, जानवर, कटाई की तस्वीरें शामिल करें' 
+          {language === 'hi'
+            ? 'खेत, फसल, जानवर, कटाई की तस्वीरें शामिल करें'
             : 'Include photos of field, crops, animals, harvest'}
         </p>
       </div>
@@ -385,8 +511,8 @@ const EditProfile = () => {
           disabled={formData.galleryPhotos.length >= 20}
         />
         <p className="text-xs text-gray-500 mt-1">
-          {language === 'hi' 
-            ? `${formData.galleryPhotos.length} / 20 तस्वीरें अपलोड की गई` 
+          {language === 'hi'
+            ? `${formData.galleryPhotos.length} / 20 तस्वीरें अपलोड की गई`
             : `${formData.galleryPhotos.length} / 20 photos uploaded`}
         </p>
       </div>
@@ -396,17 +522,17 @@ const EditProfile = () => {
           {formData.galleryPhotos.map((photo, index) => (
             <div key={index} className="relative group">
               <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                <img 
-                  src={URL.createObjectURL(photo)} 
+                <img
+                  src={photo.secure_url ? photo.secure_url : URL.createObjectURL(photo.file)}
                   alt={`Gallery ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
               </div>
               <button
                 onClick={() => {
-                  setFormData(prev => ({
+                  setFormData((prev) => ({
                     ...prev,
-                    galleryPhotos: prev.galleryPhotos.filter((_, i) => i !== index)
+                    galleryPhotos: prev.galleryPhotos.filter((_, i) => i !== index),
                   }));
                 }}
                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -443,8 +569,8 @@ const EditProfile = () => {
       {formData.products.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <p className="text-gray-500">
-            {language === 'hi' 
-              ? 'कोई उत्पाद नहीं जोड़ा गया। "नया उत्पाद" बटन दबाएं।' 
+            {language === 'hi'
+              ? 'कोई उत्पाद नहीं जोड़ा गया। "नया उत्पाद" बटन दबाएं।'
               : 'No products added. Click "Add Product" button.'}
           </p>
         </div>
@@ -456,12 +582,14 @@ const EditProfile = () => {
                 <h3 className="text-lg font-semibold text-gray-800">
                   {language === 'hi' ? `उत्पाद ${index + 1}` : `Product ${index + 1}`}
                 </h3>
-                <button
-                  onClick={() => removeProduct(product.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
+                <button onClick={() => removeProduct(product.id)} className="text-red-500 hover:text-red-700">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
                   </svg>
                 </button>
               </div>
@@ -475,14 +603,21 @@ const EditProfile = () => {
                     value={product.category}
                     onChange={(e) => {
                       updateProduct(product.id, 'category', e.target.value);
-                      updateProduct(product.id, 'name', ''); // Reset name when category changes
+                      // Reset name when category changes, but don't trigger the API call
+                      setFormData((prev) => ({
+                        ...prev,
+                        products: prev.products.map((p) => (p.id === product.id ? { ...p, name: '' } : p)),
+                      }));
                     }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   >
                     <option value="">{language === 'hi' ? 'श्रेणी चुनें' : 'Select Category'}</option>
-                    {productCategories.map(cat => (
+                    {productCategories.map((cat) => (
                       <option key={cat} value={cat}>
-                        {cat.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                        {cat
+                          .split('-')
+                          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                          .join(' ')}
                       </option>
                     ))}
                   </select>
@@ -500,15 +635,19 @@ const EditProfile = () => {
                   >
                     <option value="">
                       {!product.category
-                        ? (language === 'hi' ? 'पहले श्रेणी चुनें' : 'Select category first')
-                        : (language === 'hi' ? 'उत्पाद चुनें' : 'Select product')
-                      }
+                        ? language === 'hi'
+                          ? 'पहले श्रेणी चुनें'
+                          : 'Select category first'
+                        : language === 'hi'
+                        ? 'उत्पाद चुनें'
+                        : 'Select product'}
                     </option>
-                    {product.category && categoryProducts[product.category]?.map(p => (
-                      <option key={p.id} value={p.name}>
-                        {p.name}
-                      </option>
-                    ))}
+                    {product.category &&
+                      categoryProducts[product.category]?.map((p) => (
+                        <option key={p.id} value={p.name}>
+                          {p.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>
@@ -539,8 +678,8 @@ const EditProfile = () => {
 
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <p className="text-sm text-yellow-800">
-          {language === 'hi' 
-            ? '⚠️ यदि आपके पास प्रमाणपत्र नहीं है, तो "रसायन मुक्त लेकिन प्रमाणित नहीं" विकल्प चुनें' 
+          {language === 'hi'
+            ? '⚠️ यदि आपके पास प्रमाणपत्र नहीं है, तो "रसायन मुक्त लेकिन प्रमाणित नहीं" विकल्प चुनें'
             : '⚠️ If you don\'t have certificates, select "Chemical-free but not certified" option'}
         </p>
       </div>
@@ -548,8 +687,8 @@ const EditProfile = () => {
       {formData.certifications.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
           <p className="text-gray-500">
-            {language === 'hi' 
-              ? 'कोई प्रमाणपत्र नहीं जोड़ा गया। यदि आपके पास है तो जोड़ें।' 
+            {language === 'hi'
+              ? 'कोई प्रमाणपत्र नहीं जोड़ा गया। यदि आपके पास है तो जोड़ें।'
               : 'No certificates added. Add if you have any.'}
           </p>
         </div>
@@ -561,12 +700,14 @@ const EditProfile = () => {
                 <h3 className="text-lg font-semibold text-gray-800">
                   {language === 'hi' ? `प्रमाणपत्र ${index + 1}` : `Certificate ${index + 1}`}
                 </h3>
-                <button
-                  onClick={() => removeCertification(cert.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
+                <button onClick={() => removeCertification(cert.id)} className="text-red-500 hover:text-red-700">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
                   </svg>
                 </button>
               </div>
@@ -585,7 +726,9 @@ const EditProfile = () => {
                     <option value="organic">{language === 'hi' ? 'प्रमाणित जैविक' : 'Certified Organic'}</option>
                     <option value="fssai">FSSAI</option>
                     <option value="pgs">PGS India</option>
-                    <option value="not_certified">{language === 'hi' ? 'प्रमाणित नहीं, लेकिन रसायन मुक्त' : 'Not Certified, but Chemical-free'}</option>
+                    <option value="not_certified">
+                      {language === 'hi' ? 'प्रमाणित नहीं, लेकिन रसायन मुक्त' : 'Not Certified, but Chemical-free'}
+                    </option>
                   </select>
                 </div>
 
@@ -628,7 +771,7 @@ const EditProfile = () => {
                     disabled={cert.type === 'not_certified'}
                   />
                   {cert.image && (
-                    <p className="text-sm text-green-600 mt-2">✓ {cert.image.name}</p>
+                    <p className="text-sm text-green-600 mt-2">✓ {cert.image.fileName || cert.image.name}</p>
                   )}
                 </div>
               </div>
@@ -662,7 +805,9 @@ const EditProfile = () => {
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'स्थान:' : 'Location:'}</span>
-            <span className="font-medium">{formData.village}, {formData.district}, {formData.state}</span>
+            <span className="font-medium">
+              {formData.village}, {formData.district}, {formData.state}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'मोबाइल:' : 'Mobile:'}</span>
@@ -670,7 +815,9 @@ const EditProfile = () => {
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'अनुभव:' : 'Experience:'}</span>
-            <span className="font-medium">{formData.experience ? `${formData.experience} ${language === 'hi' ? 'वर्ष' : 'years'}` : '-'}</span>
+            <span className="font-medium">
+              {formData.experience ? `${formData.experience} ${language === 'hi' ? 'वर्ष' : 'years'}` : '-'}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'गैलरी तस्वीरें:' : 'Gallery Photos:'}</span>
@@ -692,9 +839,21 @@ const EditProfile = () => {
           {language === 'hi' ? '📝 महत्वपूर्ण नोट:' : '📝 Important Note:'}
         </h4>
         <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
-          <li>{language === 'hi' ? 'आपकी प्रोफाइल प्रकाशित होने के बाद ग्राहकों को दिखाई देगी' : 'Your profile will be visible to customers after publishing'}</li>
-          <li>{language === 'hi' ? 'आप बाद में भी अपनी प्रोफाइल संपादित कर सकते हैं' : 'You can edit your profile later as well'}</li>
-          <li>{language === 'hi' ? 'सभी जानकारी सही और सत्य होनी चाहिए' : 'All information should be correct and truthful'}</li>
+          <li>
+            {language === 'hi'
+              ? 'आपकी प्रोफाइल प्रकाशित होने के बाद ग्राहकों को दिखाई देगी'
+              : 'Your profile will be visible to customers after publishing'}
+          </li>
+          <li>
+            {language === 'hi'
+              ? 'आप बाद में भी अपनी प्रोफाइल संपादित कर सकते हैं'
+              : 'You can edit your profile later as well'}
+          </li>
+          <li>
+            {language === 'hi'
+              ? 'सभी जानकारी सही और सत्य होनी चाहिए'
+              : 'All information should be correct and truthful'}
+          </li>
         </ul>
       </div>
 
@@ -707,9 +866,9 @@ const EditProfile = () => {
           className="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 mt-1"
         />
         <label htmlFor="terms" className="text-sm text-gray-700">
-          {language === 'hi' 
-            ? 'मैं पुष्टि करता/करती हूं कि ऊपर दी गई सभी जानकारी सही और सत्य है। मैं देसी बास्केट की नियम और शर्तों से सहमत हूं।' 
-            : 'I confirm that all the information provided above is correct and truthful. I agree to Desi Basket\'s terms and conditions.'}
+          {language === 'hi'
+            ? 'मैं पुष्टि करता/करती हूं कि ऊपर दी गई सभी जानकारी सही और सत्य है। मैं देसी बास्केट की नियम और शर्तों से सहमत हूं।'
+            : "I confirm that all the information provided above is correct and truthful. I agree to Desi Basket's terms and conditions."}
         </label>
       </div>
     </div>
@@ -764,13 +923,11 @@ const EditProfile = () => {
           >
             {language === 'hi' ? '✓ प्रोफाइल प्रकाशित करें' : '✓ Publish Profile'}
           </button>
-          
+
           {/* Auto-save indicator */}
           <div className="text-center mt-4">
             <p className="text-xs text-gray-500">
-              {language === 'hi'
-                ? '💾 आपका डेटा स्वचालित रूप से सहेजा जा रहा है'
-                : '💾 Your data is being auto-saved'}
+              {language === 'hi' ? '💾 आपका डेटा स्वचालित रूप से सहेजा जा रहा है' : '💾 Your data is being auto-saved'}
             </p>
           </div>
         </div>

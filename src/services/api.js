@@ -5,8 +5,8 @@ const api = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }
+    Accept: 'application/json',
+  },
 });
 
 // Request interceptor
@@ -41,7 +41,7 @@ const PRODUCT_CATEGORIES = {
   GRAINS: 'Grains',
   DAIRY: 'Dairy',
   DESI_NONVEG: 'Desi Non-Veg',
-  LOCAL_PROCESSED: 'Local Processed Foods'
+  LOCAL_PROCESSED: 'Local Processed Foods',
 };
 
 // Mock farmers data
@@ -56,7 +56,8 @@ const mockFarmers = [
     certification: 'Organic Certified',
     contact: '9876543210',
     image: '/farmer1.jpg',
-    description: 'Third generation farmer specializing in organic farming techniques. Uses traditional methods combined with modern organic practices.'
+    description:
+      'Third generation farmer specializing in organic farming techniques. Uses traditional methods combined with modern organic practices.',
   },
   {
     id: 'farmer-2',
@@ -68,7 +69,7 @@ const mockFarmers = [
     certification: 'A2 Certified',
     contact: '9765432109',
     image: '/farmer2.jpg',
-    description: 'Family-run dairy farm with 50+ desi cows. Produces pure A2 milk and traditional dairy products.'
+    description: 'Family-run dairy farm with 50+ desi cows. Produces pure A2 milk and traditional dairy products.',
   },
   {
     id: 'farmer-3',
@@ -80,8 +81,8 @@ const mockFarmers = [
     certification: 'Natural Farming',
     contact: '8765432190',
     image: '/farmer3.jpg',
-    description: 'Young farmer using natural farming methods. Specializes in seasonal produce and heirloom varieties.'
-  }
+    description: 'Young farmer using natural farming methods. Specializes in seasonal produce and heirloom varieties.',
+  },
 ];
 
 // Import natural-farming-products.json directly (Vite handles this)
@@ -92,9 +93,9 @@ function fetchProductsFromDataJson() {
   try {
     // Use only natural farming data
     const allData = [...naturalFarmingData];
-    
+
     // Map data.json items to our product format
-    return allData.map(item => {
+    return allData.map((item) => {
       // Natural farming categories (keep as-is)
       const naturalFarmingCategories = [
         'natural-fertilizers',
@@ -107,17 +108,17 @@ function fetchProductsFromDataJson() {
         'irrigation',
         'animal-care',
         'storage-packaging',
-        'training-services'
+        'training-services',
       ];
-      
+
       let productCategory;
-      
+
       // Check if it's a natural farming product category
       if (naturalFarmingCategories.includes(item.category)) {
         productCategory = item.category; // Keep the original category
       } else {
         // Map old categories from data.json to our PRODUCT_CATEGORIES
-        switch(item.category) {
+        switch (item.category) {
           case 'vegetable':
             productCategory = PRODUCT_CATEGORIES.VEGETABLES;
             break;
@@ -149,7 +150,7 @@ function fetchProductsFromDataJson() {
 
       // Map quantity units to our standard units
       let unit;
-      switch(item.quantity_units) {
+      switch (item.quantity_units) {
         case 'kg':
           unit = 'kg';
           break;
@@ -175,7 +176,7 @@ function fetchProductsFromDataJson() {
       // Assign random farmer and pricing
       const randomFarmer = mockFarmers[Math.floor(Math.random() * mockFarmers.length)];
       // Use the price from the item if available, otherwise generate random price
-      const basePrice = item.price || (Math.floor(Math.random() * 200) + 30);
+      const basePrice = item.price || Math.floor(Math.random() * 200) + 30;
 
       return {
         id: item.id,
@@ -190,12 +191,12 @@ function fetchProductsFromDataJson() {
         benefits: [
           item.description,
           item.local_only ? 'Locally sourced' : 'Fresh produce',
-          item.farmer_sold ? 'Farmer direct' : 'Quality assured'
+          item.farmer_sold ? 'Farmer direct' : 'Quality assured',
         ].filter(Boolean),
         deliveryDays: ['Monday', 'Wednesday', 'Friday'],
         stock: Math.floor(Math.random() * 100) + 20,
         farmerId: randomFarmer.id,
-        offReference: item.off_reference
+        offReference: item.off_reference,
       };
     });
   } catch (error) {
@@ -212,7 +213,7 @@ function fetchProductsFromAPI(category, count = 10) {
 
     // Filter by category if specified
     if (category) {
-      return products.filter(product => product.category === category);
+      return products.filter((product) => product.category === category);
     }
 
     return products.slice(0, count);
@@ -239,9 +240,9 @@ export const apiService = {
         phone,
         name: '',
         addresses: [],
-        profileCompleted: false
+        profileCompleted: false,
       },
-      token: 'mock-token-' + Math.random().toString(36).substr(2, 9)
+      token: 'mock-token-' + Math.random().toString(36).substr(2, 9),
     });
   },
 
@@ -253,9 +254,9 @@ export const apiService = {
         ...profileData,
         id: 'user-123',
         phone: profileData.phone,
-        profileCompleted: true
+        profileCompleted: true,
       },
-      token: 'mock-token-' + Math.random().toString(36).substr(2, 9)
+      token: 'mock-token-' + Math.random().toString(36).substr(2, 9),
     });
   },
 
@@ -273,21 +274,44 @@ export const apiService = {
         phone: phone,
         name: profileCompleted ? 'John Doe' : '',
         email: profileCompleted ? 'john@example.com' : '',
-        addresses: profileCompleted ? [
-          {
-            id: 'addr-1',
-            name: 'Home',
-            phone: phone,
-            addressLine1: '123 Farm Lane',
-            city: 'Bangalore',
-            state: 'Karnataka',
-            pincode: '560001',
-            isDefault: true
-          }
-        ] : [],
-        profileCompleted: profileCompleted
-      }
+        addresses: profileCompleted
+          ? [
+              {
+                id: 'addr-1',
+                name: 'Home',
+                phone: phone,
+                addressLine1: '123 Farm Lane',
+                city: 'Bangalore',
+                state: 'Karnataka',
+                pincode: '560001',
+                isDefault: true,
+              },
+            ]
+          : [],
+        profileCompleted: profileCompleted,
+      },
     });
+  },
+
+  // Media upload endpoint for Cloudinary
+  uploadMedia: async (file, entityType, entityId) => {
+    // Create form data for multipart upload
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('entity_type', entityType);
+    formData.append('entity_id', entityId);
+
+    try {
+      const response = await api.post('/media/upload-cloudinary', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response;
+    } catch (error) {
+      console.error('Error uploading media:', error);
+      throw error;
+    }
   },
 
   // Product endpoints
@@ -295,14 +319,14 @@ export const apiService = {
     // Get 6 random products from natural-farming-products.json
     const shuffled = [...naturalFarmingData].sort(() => 0.5 - Math.random());
     const randomProducts = shuffled.slice(0, 6);
-    
+
     // Map to product format
-    return randomProducts.map(item => {
+    return randomProducts.map((item) => {
       const randomFarmer = mockFarmers[Math.floor(Math.random() * mockFarmers.length)];
-      const basePrice = item.price || (Math.floor(Math.random() * 200) + 30);
-      
+      const basePrice = item.price || Math.floor(Math.random() * 200) + 30;
+
       let unit;
-      switch(item.quantity_units) {
+      switch (item.quantity_units) {
         case 'kg':
           unit = 'kg';
           break;
@@ -324,7 +348,7 @@ export const apiService = {
         default:
           unit = 'kg';
       }
-      
+
       return {
         id: item.id,
         name: item.name,
@@ -338,23 +362,23 @@ export const apiService = {
         benefits: [
           item.description,
           item.local_only ? 'Locally sourced' : 'Fresh produce',
-          item.farmer_sold ? 'Farmer direct' : 'Quality assured'
+          item.farmer_sold ? 'Farmer direct' : 'Quality assured',
         ].filter(Boolean),
         deliveryDays: ['Monday', 'Wednesday', 'Friday'],
         stock: Math.floor(Math.random() * 100) + 20,
-        farmerId: randomFarmer.id
+        farmerId: randomFarmer.id,
       };
     });
   },
 
   getProducts: async () => {
     // Return all products from natural-farming-products.json
-    return naturalFarmingData.map(item => {
+    return naturalFarmingData.map((item) => {
       const randomFarmer = mockFarmers[Math.floor(Math.random() * mockFarmers.length)];
-      const basePrice = item.price || (Math.floor(Math.random() * 200) + 30);
-      
+      const basePrice = item.price || Math.floor(Math.random() * 200) + 30;
+
       let unit;
-      switch(item.quantity_units) {
+      switch (item.quantity_units) {
         case 'kg':
           unit = 'kg';
           break;
@@ -376,7 +400,7 @@ export const apiService = {
         default:
           unit = 'kg';
       }
-      
+
       return {
         id: item.id,
         name: item.name,
@@ -390,11 +414,11 @@ export const apiService = {
         benefits: [
           item.description,
           item.local_only ? 'Locally sourced' : 'Fresh produce',
-          item.farmer_sold ? 'Farmer direct' : 'Quality assured'
+          item.farmer_sold ? 'Farmer direct' : 'Quality assured',
         ].filter(Boolean),
         deliveryDays: ['Monday', 'Wednesday', 'Friday'],
         stock: Math.floor(Math.random() * 100) + 20,
-        farmerId: randomFarmer.id
+        farmerId: randomFarmer.id,
       };
     });
   },
@@ -404,9 +428,9 @@ export const apiService = {
       const products = fetchProductsFromDataJson();
 
       // Create combo packs using products from data.json
-      const vegetableProducts = products.filter(p => p.category === PRODUCT_CATEGORIES.VEGETABLES);
-      const dairyProducts = products.filter(p => p.category === PRODUCT_CATEGORIES.DAIRY);
-      const grainProducts = products.filter(p => p.category === PRODUCT_CATEGORIES.GRAINS);
+      const vegetableProducts = products.filter((p) => p.category === PRODUCT_CATEGORIES.VEGETABLES);
+      const dairyProducts = products.filter((p) => p.category === PRODUCT_CATEGORIES.DAIRY);
+      const grainProducts = products.filter((p) => p.category === PRODUCT_CATEGORIES.GRAINS);
 
       const combos = [];
 
@@ -421,26 +445,26 @@ export const apiService = {
               id: vegetableProducts[0].id,
               name: vegetableProducts[0].name,
               price: vegetableProducts[0].price,
-              images: [vegetableProducts[0].images[0]]
+              images: [vegetableProducts[0].images[0]],
             },
             {
               id: vegetableProducts[1].id,
               name: vegetableProducts[1].name,
               price: vegetableProducts[1].price,
-              images: [vegetableProducts[1].images[0]]
-            }
+              images: [vegetableProducts[1].images[0]],
+            },
           ],
           price: vegetableProducts[0].price + vegetableProducts[1].price - 10,
           originalPrice: vegetableProducts[0].price + vegetableProducts[1].price,
           discount: 10,
-          image: vegetableProducts[0].images[0]
+          image: vegetableProducts[0].images[0],
         });
       }
 
       // Local Specials Combo with Onion and Brinjal Daal
-      const onionProduct = products.find(p => p.id === 'veg_onion');
-      const brinjalProduct = products.find(p => p.id === 'veg_brinjal');
-      const toorDalProduct = products.find(p => p.id === 'pulse_toor');
+      const onionProduct = products.find((p) => p.id === 'veg_onion');
+      const brinjalProduct = products.find((p) => p.id === 'veg_brinjal');
+      const toorDalProduct = products.find((p) => p.id === 'pulse_toor');
 
       if (onionProduct && brinjalProduct && toorDalProduct) {
         combos.push({
@@ -452,25 +476,25 @@ export const apiService = {
               id: onionProduct.id,
               name: onionProduct.name,
               price: onionProduct.price,
-              images: [onionProduct.images[0]]
+              images: [onionProduct.images[0]],
             },
             {
               id: brinjalProduct.id,
               name: brinjalProduct.name,
               price: brinjalProduct.price,
-              images: [brinjalProduct.images[0]]
+              images: [brinjalProduct.images[0]],
             },
             {
               id: toorDalProduct.id,
               name: toorDalProduct.name,
               price: toorDalProduct.price,
-              images: [toorDalProduct.images[0]]
-            }
+              images: [toorDalProduct.images[0]],
+            },
           ],
           price: onionProduct.price + brinjalProduct.price + toorDalProduct.price - 40,
           originalPrice: onionProduct.price + brinjalProduct.price + toorDalProduct.price,
           discount: 40,
-          image: onionProduct.images[0]
+          image: onionProduct.images[0],
         });
       }
 
@@ -485,19 +509,19 @@ export const apiService = {
               id: dairyProducts[0].id,
               name: dairyProducts[0].name,
               price: dairyProducts[0].price,
-              images: [dairyProducts[0].images[0]]
+              images: [dairyProducts[0].images[0]],
             },
             {
               id: dairyProducts[1].id,
               name: dairyProducts[1].name,
               price: dairyProducts[1].price,
-              images: [dairyProducts[1].images[0]]
-            }
+              images: [dairyProducts[1].images[0]],
+            },
           ],
           price: dairyProducts[0].price + dairyProducts[1].price - 50,
           originalPrice: dairyProducts[0].price + dairyProducts[1].price,
           discount: 50,
-          image: dairyProducts[0].images[0]
+          image: dairyProducts[0].images[0],
         });
       } else if (products.length >= 2) {
         // Fallback combo if no dairy products
@@ -510,19 +534,19 @@ export const apiService = {
               id: products[0].id,
               name: products[0].name,
               price: products[0].price,
-              images: [products[0].images[0]]
+              images: [products[0].images[0]],
             },
             {
               id: products[1].id,
               name: products[1].name,
               price: products[1].price,
-              images: [products[1].images[0]]
-            }
+              images: [products[1].images[0]],
+            },
           ],
           price: products[0].price + products[1].price - 30,
           originalPrice: products[0].price + products[1].price,
           discount: 30,
-          image: products[0].images[0]
+          image: products[0].images[0],
         });
       }
 
@@ -536,67 +560,87 @@ export const apiService = {
           name: 'Vegetable Combo',
           description: 'Weekly essential vegetables',
           items: [
-            { id: 'veg-1', name: 'Organic Tomatoes', price: 50, images: ['https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg'] },
-            { id: 'veg-2', name: 'Local Okra', price: 40, images: ['https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg'] }
+            {
+              id: 'veg-1',
+              name: 'Organic Tomatoes',
+              price: 50,
+              images: ['https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg'],
+            },
+            {
+              id: 'veg-2',
+              name: 'Local Okra',
+              price: 40,
+              images: ['https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg'],
+            },
           ],
           price: 250,
           originalPrice: 280,
           discount: 30,
-          image: 'https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg'
+          image: 'https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg',
         },
         {
           id: 'combo-2',
           name: 'Dairy Combo',
           description: 'Weekly dairy essentials',
           items: [
-            { id: 'dairy-1', name: 'A2 Cow Milk', price: 60, images: ['https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg'] },
-            { id: 'dairy-2', name: 'Desi Ghee', price: 600, images: ['https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg'] }
+            {
+              id: 'dairy-1',
+              name: 'A2 Cow Milk',
+              price: 60,
+              images: ['https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg'],
+            },
+            {
+              id: 'dairy-2',
+              name: 'Desi Ghee',
+              price: 600,
+              images: ['https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg'],
+            },
           ],
           price: 1200,
           originalPrice: 1300,
           discount: 100,
-          image: 'https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg'
-        }
+          image: 'https://static.openfoodfacts.org/images/products/356/007/045/5302/front_en.44.400.jpg',
+        },
       ]);
     }
   },
 
   getProductsByCategory: async (categoryId) => {
     const allProducts = fetchProductsFromDataJson();
-    
+
     // Natural farming products use the category slug directly (e.g., 'desi-seeds')
     // Regular products use old format (e.g., 'vegetable')
     // We need to check both formats
-    
+
     // First, try to find products with the exact category match (for natural farming products)
-    const directMatch = allProducts.filter(product => product.category === categoryId);
-    
+    const directMatch = allProducts.filter((product) => product.category === categoryId);
+
     if (directMatch.length > 0) {
       return directMatch;
     }
-    
+
     // If no direct match, try mapping old category format to new slugs
     const categoryMap = {
-      'Vegetables': 'vegetable',
-      'Fruits': 'fruit',
-      'Grains': 'pulses_grains',
-      'Dairy': 'dairy',
+      Vegetables: 'vegetable',
+      Fruits: 'fruit',
+      Grains: 'pulses_grains',
+      Dairy: 'dairy',
       'Desi Non-Veg': 'nonveg_local',
-      'Local Processed Foods': 'locery'
+      'Local Processed Foods': 'locery',
     };
-    
+
     const mappedCategory = categoryMap[categoryId];
-    
+
     if (mappedCategory) {
-      return allProducts.filter(product => product.category === mappedCategory);
+      return allProducts.filter((product) => product.category === mappedCategory);
     }
-    
+
     return allProducts;
   },
 
   getProductDetails: async (productId) => {
     const products = await fetchProductsFromAPI();
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (!product) return Promise.reject(new Error('Product not found'));
     return product;
   },
@@ -633,7 +677,7 @@ export const apiService = {
           name: product.name,
           quantity: quantity,
           price: product.price,
-          image: product.images[0] || '/placeholder-product.jpg'
+          image: product.images[0] || '/placeholder-product.jpg',
         });
       }
 
@@ -643,7 +687,7 @@ export const apiService = {
         items: selectedItems,
         totalAmount: totalAmount,
         deliveryDay: 'Friday',
-        deliveryDate: '2025-12-15'
+        deliveryDate: '2025-12-15',
       });
     } catch (error) {
       console.error('Error creating active request:', error);
@@ -653,11 +697,11 @@ export const apiService = {
         status: 'pending',
         items: [
           { id: '1', name: 'Organic Tomatoes', quantity: 2, price: 50, image: '/tomato.jpg' },
-          { id: '3', name: 'Brown Rice', quantity: 1, price: 80, image: '/rice.jpg' }
+          { id: '3', name: 'Brown Rice', quantity: 1, price: 80, image: '/rice.jpg' },
         ],
         totalAmount: 180,
         deliveryDay: 'Friday',
-        deliveryDate: '2025-12-15'
+        deliveryDate: '2025-12-15',
       });
     }
   },
@@ -674,7 +718,7 @@ export const apiService = {
     return Promise.resolve({
       success: true,
       requestId: 'req-' + Math.random().toString(36).substr(2, 8),
-      message: 'Request submitted successfully'
+      message: 'Request submitted successfully',
     });
   },
 
@@ -684,19 +728,19 @@ export const apiService = {
   },
 
   getFarmerDetails: (farmerId) => {
-    const farmer = mockFarmers.find(f => f.id === farmerId);
+    const farmer = mockFarmers.find((f) => f.id === farmerId);
     if (!farmer) return Promise.reject(new Error('Farmer not found'));
     return Promise.resolve(farmer);
   },
 
   getProductsByFarmer: async (farmerId) => {
     const products = await fetchProductsFromAPI();
-    return products.filter(product => product.farmerId === farmerId);
+    return products.filter((product) => product.farmerId === farmerId);
   },
 
   getProductCategories: () => {
     return Promise.resolve(Object.values(PRODUCT_CATEGORIES));
-  }
+  },
 };
 
 export { fetchProductsFromDataJson };
