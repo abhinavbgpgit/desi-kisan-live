@@ -40,7 +40,7 @@ const Profile = () => {
   };
 
   const handleEditProfile = () => {
-    navigate('/edit-profile');
+    navigate('/dashboard/edit-profile');
   };
 
   if (loading) {
