@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 // Base URL for API
 const BASE_URL = "https://node-backend-pz3j.onrender.com/api/";
-// const BASE_URL = "http://localhost:5000/api";
+// const BASE_URL = "http://localhost:5000/api/";
 
 
 
