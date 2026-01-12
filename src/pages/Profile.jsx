@@ -210,7 +210,7 @@ const Profile = () => {
                     {profileData.farm_size && profileData.farm_size.trim() !== ''
                       ? profileData.farm_size
                       : 'Farm size not specified'}
-                  </span>
+                  {" "}acres of land</span>
                 </div>
               </div>
 

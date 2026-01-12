@@ -45,7 +45,7 @@ const EditProfile = () => {
       whatsapp: '',
       profile_photo: null,
       cover_photo: null,
-      experience: '',
+      experience_years: '',
       farm_size: '',
       journey: '',
       gallery: [],
@@ -399,8 +399,8 @@ const EditProfile = () => {
           </label>
           <input
             type="number"
-            value={formData.experience}
-            onChange={(e) => handleInputChange('experience', e.target.value)}
+            value={formData.experience_years}
+            onChange={(e) => handleInputChange('experience_years', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             placeholder="15"
             min="0"
@@ -839,7 +839,7 @@ const EditProfile = () => {
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'अनुभव:' : 'Experience:'}</span>
             <span className="font-medium">
-              {formData.experience ? `${formData.experience} ${language === 'hi' ? 'वर्ष' : 'years'}` : '-'}
+              {formData.experience_years ? `${formData.experience_years} ${language === 'hi' ? 'वर्ष' : 'years'}` : '-'}
             </span>
           </div>
           <div className="flex justify-between">

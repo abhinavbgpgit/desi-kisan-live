@@ -412,7 +412,7 @@ const FarmerDetails = () => {
                       }}
                     />
                     <div className="absolute top-4 left-4 bg-green-600 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
-                      {farmer.yearsExperience}+ years experience
+                      {farmer.experience_years}+ years experience
                     </div>
                     <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg">
                       <div className="flex items-center text-green-600 font-bold">
@@ -483,7 +483,7 @@ const FarmerDetails = () => {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                   <div className="bg-green-50 p-3 rounded-lg text-center">
-                    <p className="text-2xl font-bold text-green-600">{farmer.yearsExperience}+</p>
+                    <p className="text-2xl font-bold text-green-600">{farmer.experience_years}+</p>
                     <p className="text-sm text-gray-600">Years of Experience</p>
                   </div>
                   <div className="bg-green-50 p-3 rounded-lg text-center">
