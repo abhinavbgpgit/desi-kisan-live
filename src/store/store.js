@@ -4,7 +4,7 @@ import { authApi } from './api/authApi';
 import { productsApi } from './api/productsApi';
 import { categoriesApi } from './api/categoriesApi';
 import { mediaApi } from './api/mediaApi';
-import { farmersApi } from './api/farmerApi';
+import { farmersApi, profileApi } from './api/farmerApi';
 
 // Configure Redux store
 export const store = configureStore({
@@ -15,6 +15,7 @@ export const store = configureStore({
     [categoriesApi.reducerPath]: categoriesApi.reducer,
     [mediaApi.reducerPath]: mediaApi.reducer,
     [farmersApi.reducerPath]: farmersApi.reducer,
+    [profileApi.reducerPath]: profileApi.reducer
   },
   // Adding the api middleware enables caching, invalidation, polling, and other features of RTK Query
   middleware: (getDefaultMiddleware) =>
@@ -23,7 +24,8 @@ export const store = configureStore({
       productsApi.middleware,
       categoriesApi.middleware,
       mediaApi.middleware,
-      farmersApi.middleware
+      farmersApi.middleware,
+      profileApi.middleware
     ),
 });
 

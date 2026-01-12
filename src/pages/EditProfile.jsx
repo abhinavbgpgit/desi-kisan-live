@@ -4,7 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import naturalFarmingProducts from '../data/natural-farming-products.json';
 import { useGetProductsQuery, useAddFarmerProductMutation } from '../store/api/productsApi';
 import { useUploadMediaMutation } from '../store/api/mediaApi';
-import { useUpdateMyFarmerProfileMutation } from '../store/api/farmerApi';
+import { useGetProfileInfoQuery, useUpdateMyFarmerProfileMutation } from '../store/api/farmerApi';
 
 const EditProfile = () => {
   const { language } = useLanguage();
@@ -14,46 +14,55 @@ const EditProfile = () => {
   const allProducts = data?.data ?? [];
   const [uploadMedia, { isLoading: isUploadingMedia }] = useUploadMediaMutation();
   const [updateProfile, { isLoadingProfile, error }] = useUpdateMyFarmerProfileMutation();
+  const { data: profileData } = useGetProfileInfoQuery();
+
+  console.log('Profile Data:', profileData);
 
   // Log all products to console when they're loaded
-  useEffect(() => {
-    if (allProducts) {
-      console.log('All products fetched in EditProfile:', allProducts);
-    }
-  }, [allProducts]);
+  // useEffect(() => {
+  //   if (allProducts) {
+  //     console.log('All products fetched in EditProfile:', allProducts);
+  //   }
+  // }, [allProducts]);
 
   // Initialize form data from localStorage and API data
   const STORAGE_KEY = 'farmer_edit_profile_form';
   const [formData, setFormData] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-
     if (saved) {
       try {
         return JSON.parse(saved);
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
-      }
+      } catch {}
     }
 
     return {
-      farmerName: '',
-      farmName: '',
+      farmer_name: '',
+      farm_name: '',
       village: '',
       district: '',
       state: '',
       mobile: '',
       whatsapp: '',
-      profilePhoto: null, // { media_id, url }
-      coverPhoto: null, // { media_id, url }
+      profile_photo: null,
+      cover_photo: null,
       experience: '',
-      farmSize: '',
+      farm_size: '',
       journey: '',
-      galleryPhotos: [], // [{ media_id, url }]
+      gallery: [],
       products: [],
       certifications: [],
       agreedToTerms: false,
     };
   });
+
+  useEffect(() => {
+    if (profileData?.data) {
+      setFormData((prev) => ({
+        ...prev, // keep local edits if any
+        ...profileData.data.farmer, // hydrate from API
+      }));
+    }
+  }, [profileData]);
 
   const stateOptions = [
     'Bihar',
@@ -75,49 +84,48 @@ const EditProfile = () => {
   // Removed unused handleMultiSelect function
 
   const handleFileUpload = async (field, files) => {
-    if (field === 'galleryPhotos') {
+    if (field === 'gallery') {
       // Process each file and upload to media API
       const uploadPromises = Array.from(files)
-        .slice(0, 20 - formData.galleryPhotos.length)
+        .slice(0, 20 - formData.gallery.length)
         .map(async (file) => {
           try {
-            // Upload the file using the media API
-            const result = await uploadMedia({ file, entityType: 'gallery', entityId: null });
+            const result = await uploadMedia({ file, entityType: 'gallery' });
+            console.log('Upload result for gallery photo:', result);
 
-            // Store the media details (ID and secure URL) in an object
             return {
-              id: result.data.id, // Assuming the response contains an ID
-              secure_url: result.data.secure_url, // Assuming the response contains a secure URL
-              file: file, // Keep reference to the original file for display purposes
+              id: result.data.data.media_id, // ✅ FIXED
+              secure_url: result.data.data.secure_url, // ✅ FIXED
               fileName: file.name,
               fileSize: file.size,
               fileType: file.type,
+              status: 'success',
             };
           } catch (error) {
-            console.error('Error uploading file:', error);
-            // If upload fails, still store the file info but mark as failed
             return {
               id: null,
               secure_url: null,
-              file: file,
               fileName: file.name,
               fileSize: file.size,
               fileType: file.type,
-              uploadError: error.message,
+              status: 'failed',
+              uploadError: error?.response?.data?.message || error?.message || 'Upload failed',
             };
           }
         });
 
-      // Wait for all uploads to complete
       const uploadedFiles = await Promise.all(uploadPromises);
+
+      localStorage.setItem('gallery', JSON.stringify(uploadedFiles));
 
       // Update form data with the uploaded file objects
       setFormData((prev) => ({
         ...prev,
-        galleryPhotos: [...prev.galleryPhotos, ...uploadedFiles],
+        gallery: [...prev.gallery, ...uploadedFiles],
       }));
     } else {
-      // For single file uploads (profilePhoto, coverPhoto), upload directly
+      // For single file uploads (profile_photo, cover_photo), upload directly
+      alert(`Uploading image ${field}. This may take a few seconds.`);
       const file = files[0];
       try {
         const result = await uploadMedia({
@@ -126,6 +134,10 @@ const EditProfile = () => {
           entityId: null,
         }).unwrap();
 
+        console.log(`Upload result for ${field}:`, result);
+        alert(`${field} uploaded successfully!`);
+        alert(`Uploaded ${field} URL: ${result.data.secure_url}`);
+
         const imageData = {
           media_id: result.data.media_id,
           secure_url: result.data.secure_url,
@@ -133,11 +145,11 @@ const EditProfile = () => {
 
         setFormData((prev) => ({
           ...prev,
-          [field]: imageData,
+          [field]: result.data.secure_url,
         }));
 
         // Save to localStorage for persistence
-        if (field === 'profilePhoto' || field === 'coverPhoto') {
+        if (field === 'profile_photo' || field === 'cover_photo') {
           localStorage.setItem(field, JSON.stringify(result));
         }
       } catch (error) {
@@ -188,9 +200,7 @@ const EditProfile = () => {
   };
 
   useEffect(() => {
-    return () => {
-      console.log('Form Data Updated:', formData);
-    };
+    console.log('Form Data Updated:', formData);
   }, [formData]);
 
   const removeProduct = (id) => {
@@ -234,25 +244,38 @@ const EditProfile = () => {
     // Prepare form data for submission, extracting only the secure_url for images
     const submitData = {
       ...formData,
-      profilePhoto: formData.profilePhoto ? formData.profilePhoto.secure_url : null,
-      coverPhoto: formData.coverPhoto ? formData.coverPhoto.secure_url : null,
-      // Remove the file objects as they shouldn't be sent to the backend
-      galleryPhotos: formData.galleryPhotos.map((photo) => ({
-        id: photo.id,
-        secure_url: photo.secure_url,
-      })),
-      certifications: formData.certifications.map((cert) => ({
-        ...cert,
-        image: cert.image ? (typeof cert.image === 'object' ? cert.image.secure_url : cert.image) : null,
-      })),
+    };
+
+    const mock = {
+      farmer_name: 'Sweety Kumari',
+      farm_name: 'Sweety Organic Farm',
+      village: 'nathnagar',
+      district: 'bhagalpur',
+      state: 'Bihar',
+      mobile: '9508706378',
+      whatsapp: '9508706378',
+      experience_years: null,
+      farm_size: '4 acre',
+      profile_photo:
+        'https://res.cloudinary.com/dk0z4ums3/image/upload/v1705156523/desi-kisan/farmer_profiles/azxxc9vth6r6jvmsuapw.jpg',
+      cover_photo:
+        'https://res.cloudinary.com/dk0z4ums3/image/upload/v1705156523/desi-kisan/farmer_covers/azxxc9vth6r6jvmsuapw.jpg',
+      products: [
+        { id: 1768235876589, category: 'Oil', name: ' Mustard Oil', images: [] },
+        { id: 1768235891567, category: 'Vegetables', name: 'Tomato', images: [] },
+      ],
+      gallery: [],
+      journey: 'hii',
+      agreed_to_terms: false,
+      is_completed: false,
     };
 
     try {
       const res = await updateProfile(submitData).unwrap();
       console.log('Updated:', res);
       // Clear localStorage after successful submission
-      localStorage.removeItem('profilePhoto');
-      localStorage.removeItem('coverPhoto');
+      // localStorage.removeItem('profile_photo');
+      // localStorage.removeItem('cover_photo');
     } catch (err) {
       console.error('Update failed:', err);
     }
@@ -273,8 +296,8 @@ const EditProfile = () => {
           </label>
           <input
             type="text"
-            value={formData.farmerName}
-            onChange={(e) => handleInputChange('farmerName', e.target.value)}
+            value={formData.farmer_name}
+            onChange={(e) => handleInputChange('farmer_name', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             placeholder={language === 'hi' ? 'उदाहरण: रमेश कुमार' : 'e.g., Ramesh Kumar'}
             required
@@ -287,8 +310,8 @@ const EditProfile = () => {
           </label>
           <input
             type="text"
-            value={formData.farmName}
-            onChange={(e) => handleInputChange('farmName', e.target.value)}
+            value={formData.farm_name}
+            onChange={(e) => handleInputChange('farm_name', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             placeholder={language === 'hi' ? 'उदाहरण: श्री राम ऑर्गेनिक फार्म' : 'e.g., Shri Ram Organic Farm'}
             required
@@ -390,8 +413,8 @@ const EditProfile = () => {
           </label>
           <input
             type="text"
-            value={formData.farmSize}
-            onChange={(e) => handleInputChange('farmSize', e.target.value)}
+            value={formData.farm_size}
+            onChange={(e) => handleInputChange('farm_size', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             placeholder={language === 'hi' ? '5 एकड़' : '5 Acres'}
           />
@@ -405,18 +428,18 @@ const EditProfile = () => {
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => handleFileUpload('profilePhoto', e.target.files)}
+          onChange={(e) => handleFileUpload('profile_photo', e.target.files)}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
-        {formData.profilePhoto && (
+        {formData.profile_photo && (
           <div className="mt-2 flex items-center gap-2">
             <img
-              src={formData.profilePhoto.secure_url || formData.profilePhoto}
+              src={formData.profile_photo.secure_url || formData.profile_photo}
               alt="Profile preview"
               className="w-16 h-16 rounded-full object-cover border-2 border-green-500"
             />
             <p className="text-sm text-green-600">
-              ✓ {formData.profilePhoto.fileName || formData.profilePhoto.name || 'Profile photo uploaded'}
+              ✓ {formData.profile_photo.fileName || formData.profile_photo.name || 'Profile photo uploaded'}
             </p>
           </div>
         )}
@@ -429,18 +452,18 @@ const EditProfile = () => {
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => handleFileUpload('coverPhoto', e.target.files)}
+          onChange={(e) => handleFileUpload('cover_photo', e.target.files)}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
-        {formData.coverPhoto && (
+        {formData.cover_photo && (
           <div className="mt-2 flex items-center gap-2">
             <img
-              src={formData.coverPhoto.secure_url || formData.coverPhoto}
+              src={formData.cover_photo.secure_url || formData.cover_photo}
               alt="Cover preview"
               className="w-16 h-16 rounded object-cover border-2 border-green-500"
             />
             <p className="text-sm text-green-600">
-              ✓ {formData.coverPhoto.fileName || formData.coverPhoto.name || 'Cover photo uploaded'}
+              ✓ {formData.cover_photo.fileName || formData.cover_photo.name || 'Cover photo uploaded'}
             </p>
           </div>
         )}
@@ -506,20 +529,20 @@ const EditProfile = () => {
           type="file"
           accept="image/*"
           multiple
-          onChange={(e) => handleFileUpload('galleryPhotos', e.target.files)}
+          onChange={(e) => handleFileUpload('gallery', e.target.files)}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          disabled={formData.galleryPhotos.length >= 20}
+          disabled={formData.gallery.length >= 20}
         />
         <p className="text-xs text-gray-500 mt-1">
           {language === 'hi'
-            ? `${formData.galleryPhotos.length} / 20 तस्वीरें अपलोड की गई`
-            : `${formData.galleryPhotos.length} / 20 photos uploaded`}
+            ? `${formData.gallery.length} / 20 तस्वीरें अपलोड की गई`
+            : `${formData.gallery.length} / 20 photos uploaded`}
         </p>
       </div>
 
-      {formData.galleryPhotos.length > 0 && (
+      {formData.gallery.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {formData.galleryPhotos.map((photo, index) => (
+          {formData.gallery.map((photo, index) => (
             <div key={index} className="relative group">
               <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                 <img
@@ -532,7 +555,7 @@ const EditProfile = () => {
                 onClick={() => {
                   setFormData((prev) => ({
                     ...prev,
-                    galleryPhotos: prev.galleryPhotos.filter((_, i) => i !== index),
+                    gallery: prev.gallery.filter((_, i) => i !== index),
                   }));
                 }}
                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -797,11 +820,11 @@ const EditProfile = () => {
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'किसान का नाम:' : 'Farmer Name:'}</span>
-            <span className="font-medium">{formData.farmerName || '-'}</span>
+            <span className="font-medium">{formData.farmer_name || '-'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'फार्म का नाम:' : 'Farm Name:'}</span>
-            <span className="font-medium">{formData.farmName || '-'}</span>
+            <span className="font-medium">{formData.farm_name || '-'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'स्थान:' : 'Location:'}</span>
@@ -821,7 +844,7 @@ const EditProfile = () => {
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'गैलरी तस्वीरें:' : 'Gallery Photos:'}</span>
-            <span className="font-medium">{formData.galleryPhotos.length || 0}</span>
+            <span className="font-medium">{formData.gallery.length || 0}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">{language === 'hi' ? 'उत्पाद:' : 'Products:'}</span>
