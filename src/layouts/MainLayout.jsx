@@ -4,7 +4,7 @@ import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User, Home, Users, ClipboardList, LogOut, UserCircle, Package, Languages, LayoutDashboard } from 'lucide-react';
+import { ShoppingCart, User, Home, Users, ClipboardList, LogOut, UserCircle, Package, Languages, LayoutDashboard, X } from 'lucide-react';
 import desiLogo from '../assets/desi_logo.png';
 
 const MainLayout = () => {
@@ -13,6 +13,7 @@ const MainLayout = () => {
   const { user, logout } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showMobileProfileModal, setShowMobileProfileModal] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [showMobileLanguageDropdown, setShowMobileLanguageDropdown] = useState(false);
   const [cartAnimation, setCartAnimation] = useState(false);
@@ -86,6 +87,7 @@ const MainLayout = () => {
 
   const handleLogout = () => {
     setShowProfileDropdown(false);
+    setShowMobileProfileModal(false);
     logout();
   };
 
@@ -340,21 +342,100 @@ const MainLayout = () => {
               </div>
             )}
           </div>
-        <button
-          onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-          className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
-        >
-          {getUserInitials() ? (
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
-              {getUserInitials()}
+          <button
+            onClick={() => setShowMobileProfileModal(!showMobileProfileModal)}
+            className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
+          >
+            {getUserInitials() ? (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
+                {getUserInitials()}
+              </div>
+            ) : (
+              <User className="w-6 h-6" />
+            )}
+            <span className="text-xs mt-1">{user?.first_name || (language === 'hi' ? 'प्रोफ़ाइल' : 'Profile')}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Profile Modal */}
+      {showMobileProfileModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 md:hidden">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm animate-fadeIn">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800">
+                {language === 'hi' ? 'प्रोफ़ाइल मेनू' : 'Profile Menu'}
+              </h3>
+              <button
+                onClick={() => setShowMobileProfileModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
-          ) : (
-            <User className="w-6 h-6" />
-          )}
-          <span className="text-xs mt-1">{user?.first_name || (language === 'hi' ? 'प्रोफ़ाइल' : 'Profile')}</span>
-        </button>
-      </div>
-      </div>
+
+            {/* Modal Content */}
+            <div className="p-4">
+              {/* User Info */}
+              <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-gray-200">
+                {getUserInitials() ? (
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-base shadow-lg">
+                    {getUserInitials()}
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                    <User className="w-6 h-6 text-gray-600" />
+                  </div>
+                )}
+                <div>
+                  <p className="font-semibold text-gray-800">
+                    {user?.first_name} {user?.last_name}
+                  </p>
+                  <p className="text-sm text-gray-500">{user?.mobile}</p>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="space-y-2">
+                <Link
+                  to="/dashboard/profile"
+                  onClick={() => setShowMobileProfileModal(false)}
+                  className="flex items-center px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <UserCircle className="w-5 h-5 text-gray-600 mr-3" />
+                  <span className="text-gray-700 font-medium">
+                    {language === 'hi' ? 'प्रोफ़ाइल देखें' : 'View Profile'}
+                  </span>
+                </Link>
+                
+                <Link
+                  to="/dashboard/requests"
+                  onClick={() => setShowMobileProfileModal(false)}
+                  className="flex items-center px-4 py-3 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <Package className="w-5 h-5 text-gray-600 mr-3" />
+                  <span className="text-gray-700 font-medium">
+                    {language === 'hi' ? 'आपके ऑर्डर' : 'Your Orders'}
+                  </span>
+                </Link>
+
+                <div className="border-t border-gray-200 my-2"></div>
+
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center w-full px-4 py-3 hover:bg-red-50 rounded-lg transition-colors text-left"
+                >
+                  <LogOut className="w-5 h-5 text-red-600 mr-3" />
+                  <span className="text-red-600 font-medium">
+                    {language === 'hi' ? 'लॉगआउट' : 'Logout'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

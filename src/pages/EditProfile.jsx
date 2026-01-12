@@ -14,7 +14,7 @@ const EditProfile = () => {
   const allProducts = data?.data ?? [];
   const [uploadMedia, { isLoading: isUploadingMedia }] = useUploadMediaMutation();
   const [updateProfile, { isLoadingProfile, error }] = useUpdateMyFarmerProfileMutation();
-  const { data: profileData } = useGetProfileInfoQuery();
+  const { data: profileData, isLoading: isFetchingProfile, isError: isProfileError } = useGetProfileInfoQuery();
 
   console.log('Profile Data:', profileData);
 
@@ -284,11 +284,7 @@ const EditProfile = () => {
 
   // Section 1: Basic Profile Information
   const renderSection1 = () => (
-    <div className="space-y-6 bg-white p-6 md:p-8 rounded-xl">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        {language === 'hi' ? '🧑‍🌾 बुनियादी जानकारी' : '🧑‍🌾 Basic Information'}
-      </h2>
-
+    <div className="space-y-6 bg-white p-6 md:p-8 rounded-xl">      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -897,6 +893,38 @@ const EditProfile = () => {
     </div>
   );
 
+  // Show loading state while profile data is being fetched
+  if (isFetchingProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
+        <div className="text-center">
+          {/* Animated spinner */}
+          <div className="mb-6 flex justify-center">
+            <div className="relative">
+              <div className="w-20 h-20 border-4 border-green-200 rounded-full"></div>
+              <div className="w-20 h-20 border-4 border-green-600 rounded-full animate-spin border-t-transparent absolute top-0 left-0"></div>
+            </div>
+          </div>
+          
+          {/* Loading text */}
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
+            {language === 'hi' ? 'आपकी प्रोफाइल लोड हो रही है' : 'Your profile is loading'}
+          </h2>
+          <p className="text-gray-600 text-sm md:text-base">
+            {language === 'hi' ? 'कृपया प्रतीक्षा करें...' : 'Please wait...'}
+          </p>
+          
+          {/* Animated dots */}
+          <div className="flex justify-center gap-2 mt-4">
+            <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+            <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+            <div className="w-2 h-2 bg-green-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -908,7 +936,7 @@ const EditProfile = () => {
             </svg>
           </Link>
           <h1 className="text-xl font-bold text-gray-800">
-            {language === 'hi' ? 'अपनी प्रोफाइल बनाएं' : 'Create Your Profile'}
+            {language === 'hi' ? 'अपनी प्रोफाइल बनाएं' : 'Edit Your Profile'}
           </h1>
         </div>
       </div>
