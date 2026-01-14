@@ -1,155 +1,111 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useGetProfileInfoQuery } from '../store/api/farmerApi';
 
 const AddProduct = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   
-  const [formData, setFormData] = useState({
-    name: '',
-    category: '',
-    subcategory: '',
-    image: '',
-    description: '',
-    price: '',
-    quantity_units: 'kg',
-    farmer_sold: true,
-    local_only: false,
-    organic: false,
-    cold_press: false,
-    deshi_seeds: false,
-    off_reference: ''
-  });
+  // Fetch products from API
+  const { data: profileData, isLoading, error } = useGetProfileInfoQuery();
+  
+  const [availableProducts, setAvailableProducts] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imagePreview, setImagePreview] = useState('');
+  // Load products from API response
+  useEffect(() => {
+    if (profileData && profileData.data && profileData.data.farmer && profileData.data.farmer.products) {
+      setAvailableProducts(profileData.data.farmer.products);
+    }
+  }, [profileData]);
 
-  // Categories based on products.json
-  const categories = [
-    { value: 'vegetable', label: 'Vegetable (सब्जी)', subcategories: ['general', 'tuber', 'bulb', 'leafy', 'pod', 'nightshade', 'gourd', 'root', 'bell_pepper'] },
-    { value: 'fruit', label: 'Fruit (फल)', subcategories: ['pome', 'tropical', 'citrus'] },
-    { value: 'pulses_grains', label: 'Pulses & Grains (दाल और अनाज)', subcategories: ['dal', 'grain', 'flour', 'rice', 'chura', 'arhar', 'moong', 'urad', 'chana', 'masoor', 'toor'] },
-    { value: 'locery', label: 'Local Grocery (स्थानीय किराना)', subcategories: ['flour', 'condiment', 'sweetener', 'snack', 'dry_fruit'] },
-    { value: 'nonveg_local', label: 'Non-Veg Local (मांसाहार)', subcategories: ['eggs', 'poultry', 'fish'] },
-    { value: 'herb', label: 'Herbs & Spices (जड़ी-बूटी)', subcategories: ['leafy_herb', 'rhizome', 'bulb', 'moringa'] },
-    { value: 'dairy', label: 'Dairy Products (डेयरी)', subcategories: ['liquid', 'fermented', 'fat', 'cheese'] }
-  ];
+  // Filter products based on search
+  const filteredProducts = availableProducts.filter(product =>
+    product.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const quantityUnits = [
-    { value: 'kg', label: 'Kilogram (किलो)' },
-    { value: 'litre', label: 'Litre (लीटर)' },
-    { value: 'dozen', label: 'Dozen (दर्जन)' },
-    { value: 'bundle', label: 'Bundle (गड्डी)' },
-    { value: 'jar', label: 'Jar (जार)' },
-    { value: 'piece', label: 'Piece (पीस)' }
-  ];
-
-  // Get subcategories based on selected category
-  const getSubcategories = () => {
-    const category = categories.find(cat => cat.value === formData.category);
-    return category ? category.subcategories : [];
-  };
-
-  // Handle input changes
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+  // Toggle product selection
+  const toggleProductSelection = (product) => {
+    const isSelected = selectedProducts.find(p => p.id === product.id);
     
-    // Clear error for this field
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-
-    // Update image preview
-    if (name === 'image' && value) {
-      setImagePreview(value);
-    }
-
-    // Reset subcategory when category changes
-    if (name === 'category') {
-      setFormData(prev => ({ ...prev, subcategory: '' }));
+    if (isSelected) {
+      // Remove from selected
+      setSelectedProducts(selectedProducts.filter(p => p.id !== product.id));
+    } else {
+      // Add to selected with default values
+      setSelectedProducts([...selectedProducts, {
+        ...product,
+        isAvailable: true,
+        availableDate: ''
+      }]);
     }
   };
 
-  // Validate form
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Product name is required';
-    }
-
-    if (!formData.category) {
-      newErrors.category = 'Category is required';
-    }
-
-    if (!formData.subcategory) {
-      newErrors.subcategory = 'Subcategory is required';
-    }
-
-    if (!formData.image.trim()) {
-      newErrors.image = 'Product image URL is required';
-    } else if (!formData.image.match(/^https?:\/\/.+/)) {
-      newErrors.image = 'Please enter a valid image URL';
-    }
-
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
-    }
-
-    if (!formData.price || formData.price <= 0) {
-      newErrors.price = 'Price must be greater than 0';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  // Update product availability status
+  const updateProductAvailability = (productId, isAvailable) => {
+    setSelectedProducts(selectedProducts.map(p => 
+      p.id === productId ? { ...p, isAvailable, availableDate: isAvailable ? '' : p.availableDate } : p
+    ));
   };
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Update product available date
+  const updateProductDate = (productId, date) => {
+    setSelectedProducts(selectedProducts.map(p => 
+      p.id === productId ? { ...p, availableDate: date } : p
+    ));
+  };
 
-    if (!validateForm()) {
+  // Handle save
+  const handleSave = () => {
+    if (selectedProducts.length === 0) {
+      alert(t('please_select_product'));
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      // Generate unique ID
-      const timestamp = Date.now();
-      const randomNum = Math.floor(Math.random() * 1000);
-      const productId = `${formData.category}_${timestamp}_${randomNum}`;
-
-      const newProduct = {
-        id: productId,
-        ...formData,
-        price: parseFloat(formData.price)
-      };
-
-      // Here you would typically save to backend/database
-      console.log('New Product:', newProduct);
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Show success message
-      alert('Product added successfully! ✅');
-      
-      // Navigate back to dashboard
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Error adding product:', error);
-      alert('Failed to add product. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+    // Validate that products with isAvailable=false have a date
+    const invalidProducts = selectedProducts.filter(p => !p.isAvailable && !p.availableDate);
+    if (invalidProducts.length > 0) {
+      alert(t('please_select_date'));
+      return;
     }
+
+    console.log('Selected Products:', selectedProducts);
+    alert(t('products_saved_successfully'));
+    
+    // Navigate back to dashboard
+    navigate('/dashboard');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">{t('loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center p-6">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">{t('error_loading')}</h2>
+          <p className="text-gray-600">{t('failed_to_load_products')}</p>
+          <Link
+            to="/dashboard"
+            className="mt-4 inline-block px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            {t('back_to_dashboard')}
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -161,316 +117,205 @@ const AddProduct = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <h1 className="text-xl font-bold text-gray-800">{t('add_product') || 'Add Product'}</h1>
+          <h1 className="text-xl font-bold text-gray-800">
+            {t('add_product')}
+          </h1>
         </div>
       </div>
 
-      {/* Form */}
-      <div className="p-4 md:p-6 max-w-4xl mx-auto">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          
-          {/* Image Section */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <span className="text-2xl">📸</span>
-              Product Image
-            </h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Image URL <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="url"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleChange}
-                  placeholder="https://example.com/image.jpg"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    errors.image ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                />
-                {errors.image && (
-                  <p className="mt-1 text-sm text-red-500">{errors.image}</p>
-                )}
-              </div>
-
-              {/* Image Preview */}
-              {imagePreview && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
-                  <div className="w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                      onError={() => setImagePreview('')}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+      <div className="p-4 md:p-6 max-w-6xl mx-auto">
+        {/* Search Bar */}
+        <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder={t('search_products')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+            <svg 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
+        </div>
 
-          {/* Basic Information */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <span className="text-2xl">📝</span>
-              Basic Information
-            </h2>
-            
-            <div className="space-y-4">
-              {/* Product Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Product Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="e.g., Fresh Tomatoes"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    errors.name ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-                )}
-              </div>
-
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    errors.category ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                >
-                  <option value="">Select Category</option>
-                  {categories.map(cat => (
-                    <option key={cat.value} value={cat.value}>{cat.label}</option>
-                  ))}
-                </select>
-                {errors.category && (
-                  <p className="mt-1 text-sm text-red-500">{errors.category}</p>
-                )}
-              </div>
-
-              {/* Subcategory */}
-              {formData.category && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Subcategory <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="subcategory"
-                    value={formData.subcategory}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                      errors.subcategory ? 'border-red-500' : 'border-gray-300'
+        {/* Product Selection Section */}
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <span className="text-2xl">📦</span>
+            {t('select_available_products')}
+          </h2>
+          
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-lg">{t('no_products_found')}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredProducts.map((product) => {
+                const isSelected = selectedProducts.find(p => p.id === product.id);
+                
+                return (
+                  <div
+                    key={product.id}
+                    onClick={() => toggleProductSelection(product)}
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                      isSelected 
+                        ? 'border-green-500 bg-green-50' 
+                        : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'
                     }`}
                   >
-                    <option value="">Select Subcategory</option>
-                    {getSubcategories().map(sub => (
-                      <option key={sub} value={sub}>
-                        {sub.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.subcategory && (
-                    <p className="mt-1 text-sm text-red-500">{errors.subcategory}</p>
-                  )}
-                </div>
-              )}
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Describe your product..."
-                  rows="4"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    errors.description ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                />
-                {errors.description && (
-                  <p className="mt-1 text-sm text-red-500">{errors.description}</p>
-                )}
-              </div>
+                    <div className="flex items-start gap-3">
+                      <div className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center ${
+                        isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                      }`}>
+                        {isSelected && (
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        {product.image && (
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-full h-32 object-cover rounded-lg mb-2"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        )}
+                        <h3 className="font-semibold text-gray-800">{product.name}</h3>
+                        {product.category && (
+                          <p className="text-sm text-gray-500 mt-1">
+                            {product.category}
+                          </p>
+                        )}
+                        {product.price && (
+                          <p className="text-sm font-medium text-green-600 mt-1">
+                            ₹{product.price}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
+          )}
+        </div>
 
-          {/* Pricing & Quantity */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <span className="text-2xl">💰</span>
-              Pricing & Quantity
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Price */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price (₹) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                    errors.price ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                />
-                {errors.price && (
-                  <p className="mt-1 text-sm text-red-500">{errors.price}</p>
-                )}
-              </div>
-
-              {/* Quantity Units */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Quantity Unit <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="quantity_units"
-                  value={formData.quantity_units}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  {quantityUnits.map(unit => (
-                    <option key={unit.value} value={unit.value}>{unit.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Product Features */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
+        {/* Selected Products Configuration */}
+        {selectedProducts.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <span className="text-2xl">✅</span>
-              Product Features
+              {t('selected_products')} ({selectedProducts.length})
             </h2>
             
-            <div className="space-y-3">
-              {/* Farmer Sold */}
-              <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
-                <input
-                  type="checkbox"
-                  name="farmer_sold"
-                  checked={formData.farmer_sold}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Farmer Sold (किसान द्वारा बेचा गया)</span>
-              </label>
+            <div className="space-y-4">
+              {selectedProducts.map((product) => (
+                <div key={product.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start gap-4">
+                    {product.image && (
+                      <img 
+                        src={product.image} 
+                        alt={product.name}
+                        className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800 mb-2">{product.name}</h3>
+                      
+                      {/* Availability Toggle */}
+                      <div className="flex items-center gap-4 mb-3">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name={`availability-${product.id}`}
+                            checked={product.isAvailable}
+                            onChange={() => updateProductAvailability(product.id, true)}
+                            className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
+                          />
+                          <span className="text-sm font-medium text-gray-700">
+                            {t('available_now')}
+                          </span>
+                        </label>
+                        
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name={`availability-${product.id}`}
+                            checked={!product.isAvailable}
+                            onChange={() => updateProductAvailability(product.id, false)}
+                            className="w-4 h-4 text-orange-600 focus:ring-2 focus:ring-orange-500"
+                          />
+                          <span className="text-sm font-medium text-gray-700">
+                            {t('available_later')}
+                          </span>
+                        </label>
+                      </div>
 
-              {/* Local Only */}
-              <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
-                <input
-                  type="checkbox"
-                  name="local_only"
-                  checked={formData.local_only}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Local Only (केवल स्थानीय)</span>
-              </label>
+                      {/* Date Picker (shown when not available now) */}
+                      {!product.isAvailable && (
+                        <div className="mt-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {t('available_date')} <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="date"
+                            value={product.availableDate}
+                            onChange={(e) => updateProductDate(product.id, e.target.value)}
+                            min={new Date().toISOString().split('T')[0]}
+                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          />
+                        </div>
+                      )}
+                    </div>
 
-              {/* Organic */}
-              <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
-                <input
-                  type="checkbox"
-                  name="organic"
-                  checked={formData.organic}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Organic (जैविक)</span>
-              </label>
-
-              {/* Cold Press */}
-              <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
-                <input
-                  type="checkbox"
-                  name="cold_press"
-                  checked={formData.cold_press}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Cold Press (कोल्ड प्रेस)</span>
-              </label>
-
-              {/* Deshi Seeds */}
-              <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
-                <input
-                  type="checkbox"
-                  name="deshi_seeds"
-                  checked={formData.deshi_seeds}
-                  onChange={handleChange}
-                  className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Deshi Seeds (देसी बीज)</span>
-              </label>
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => toggleProductSelection(product)}
+                      className="text-red-500 hover:text-red-700 p-2"
+                      title="Remove"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Optional Reference */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <span className="text-2xl">🔗</span>
-              Additional Information (Optional)
-            </h2>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reference URL
-              </label>
-              <input
-                type="url"
-                name="off_reference"
-                value={formData.off_reference}
-                onChange={handleChange}
-                placeholder="https://example.com/reference"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-4 sticky bottom-0 bg-gray-50 py-4 -mx-4 px-4 md:-mx-6 md:px-6">
-            <Link
-              to="/dashboard"
-              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-center font-medium"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Saving...' : 'Save Product'}
-            </button>
-          </div>
-        </form>
+        {/* Action Buttons */}
+        <div className="flex gap-4 sticky bottom-0 bg-gray-50 py-4 -mx-4 px-4 md:-mx-6 md:px-6">
+          <Link
+            to="/dashboard"
+            className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors text-center font-medium"
+          >
+            {t('cancel')}
+          </Link>
+          <button
+            onClick={handleSave}
+            disabled={selectedProducts.length === 0}
+            className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {t('save')} ({selectedProducts.length})
+          </button>
+        </div>
       </div>
     </div>
   );

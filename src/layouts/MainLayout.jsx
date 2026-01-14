@@ -209,6 +209,21 @@ const MainLayout = () => {
               </span>
             </Link>
 
+            {/* Go Button */}
+            <Link
+              to="/dashboard"
+              className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group"
+            >
+              <div className={`w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
+                isScrolled ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
+              }`}>
+                Go
+              </div>
+              <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+                {language === 'hi' ? 'जाओ' : 'Go'}
+              </span>
+            </Link>
+
             {/* Profile with Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
@@ -301,6 +316,13 @@ const MainLayout = () => {
           <Link to="/dashboard" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors">
             <LayoutDashboard className="w-6 h-6" />
             <span className="text-xs mt-1">{language === 'hi' ? 'डैशबोर्ड' : 'Dashboard'}</span>
+          </Link>
+          {/* Go Button for Mobile */}
+          <Link to="/dashboard" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
+              Go
+            </div>
+            <span className="text-xs mt-1">{language === 'hi' ? 'जाओ' : 'Go'}</span>
           </Link>
           <div className="relative" ref={mobileLanguageDropdownRef}>
             <button
