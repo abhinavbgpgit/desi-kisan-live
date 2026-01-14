@@ -27,10 +27,19 @@ const AddProduct = () => {
   // State for modals
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   
   // State for edit form
   const [editForm, setEditForm] = useState({
+    productId: '',
+    quantity: '',
+    isAvailable: true,
+    availabilityDate: ''
+  });
+
+  // State for add form
+  const [addForm, setAddForm] = useState({
     productId: '',
     quantity: '',
     isAvailable: true,
@@ -117,6 +126,51 @@ const AddProduct = () => {
     }
   };
 
+  // Handle add save
+  const handleAddSave = async () => {
+    // Validate form
+    if (!addForm.productId) {
+      alert('Please select a product');
+      return;
+    }
+
+    if (!addForm.quantity || addForm.quantity <= 0) {
+      alert('Please enter a valid quantity');
+      return;
+    }
+
+    if (!addForm.isAvailable && !addForm.availabilityDate) {
+      alert('Please select an availability date');
+      return;
+    }
+
+    try {
+      // Set availability date based on isAvailable status
+      const availabilityDate = addForm.isAvailable
+        ? new Date().toISOString().split('T')[0] // Today's date if available now
+        : addForm.availabilityDate; // Future date if available later
+
+      await addProduct({
+        productId: parseInt(addForm.productId),
+        quantity: parseInt(addForm.quantity),
+        isAvailable: addForm.isAvailable,
+        availabilityDate: availabilityDate
+      }).unwrap();
+
+      setShowAddModal(false);
+      setAddForm({
+        productId: '',
+        quantity: '',
+        isAvailable: true,
+        availabilityDate: ''
+      });
+      refetch();
+    } catch (error) {
+      console.error('Failed to add product:', error);
+      alert('Failed to add product. Please try again.');
+    }
+  };
+
   // Get product details from the farmer product object
   const getProductDetails = (farmerProduct) => {
     // If product details are nested in the response, use them
@@ -157,7 +211,8 @@ const AddProduct = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="p-4 bg-white shadow-sm sticky top-0 z-10">
         <div className="flex items-center gap-4">
@@ -175,12 +230,21 @@ const AddProduct = () => {
       <div className="p-4 md:p-6 max-w-6xl mx-auto">
         {/* Added Products Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="text-2xl">📦</span>
-            Your Added Items ({addedProducts.length})
-          </h2>
-          
-          {addedProducts.length === 0 ? (
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <span className="text-2xl">📦</span>
+              Your Added Items ({addedProducts.length})
+            </h2>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center gap-2"
+            >
+              <span className="text-lg">+</span>
+              Add New Product
+            </button>
+          </div>
+
+           {addedProducts.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <div className="text-6xl mb-4">📭</div>
               <p className="text-lg font-medium mb-2">No products added yet</p>
@@ -441,6 +505,150 @@ const AddProduct = () => {
         </div>
       )}
     </div>
+
+    {/* Add Product Modal */}
+    {showAddModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 my-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-semibold text-gray-800">
+              Add New Product
+            </h3>
+            <button
+              onClick={() => {
+                setShowAddModal(false);
+                setAddForm({
+                  productId: '',
+                  quantity: '',
+                  isAvailable: true,
+                  availabilityDate: ''
+                });
+              }}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {/* Product Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Product <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={addForm.productId}
+                onChange={(e) => setAddForm(prev => ({...prev, productId: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="">Select a product</option>
+                {availableProducts.map(product => (
+                  <option key={product.id} value={product.id}>
+                    {product.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Quantity */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Quantity <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={addForm.quantity}
+                onChange={(e) => setAddForm(prev => ({...prev, quantity: e.target.value}))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder="Enter quantity"
+              />
+            </div>
+
+            {/* Availability Status */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Availability Status <span className="text-red-500">*</span>
+              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={addForm.isAvailable}
+                    onChange={() => setAddForm(prev => ({...prev, isAvailable: true}))}
+                    className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    Available Now
+                  </span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={!addForm.isAvailable}
+                    onChange={() => setAddForm(prev => ({...prev, isAvailable: false}))}
+                    className="w-4 h-4 text-orange-600 focus:ring-2 focus:ring-orange-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    Available From
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Availability Date (shown when not available now) */}
+            {!addForm.isAvailable && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Availability Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={addForm.availabilityDate}
+                  onChange={(e) => setAddForm(prev => ({...prev, availabilityDate: e.target.value}))}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setAddForm({
+                    productId: '',
+                    quantity: '',
+                    isAvailable: true,
+                    availabilityDate: ''
+                  });
+                }}
+                className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddSave}
+                disabled={
+                  !addForm.productId ||
+                  !addForm.quantity ||
+                  addForm.quantity <= 0 ||
+                  (!addForm.isAvailable && !addForm.availabilityDate)
+                }
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                Add Product
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+      </>
   );
 };
 
