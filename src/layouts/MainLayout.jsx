@@ -7,6 +7,13 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, User, Home, Users, ClipboardList, LogOut, UserCircle, Package, Languages, LayoutDashboard, X } from 'lucide-react';
 import desiLogo from '../assets/desi_logo.png';
 
+// Import dashboard button images
+import addProductImg from '../assets/dashboard_buttons/add_your_product .png';
+import editProfileImg from '../assets/dashboard_buttons/edit_your profile.png';
+import viewOrdersImg from '../assets/dashboard_buttons/view_your_orders.png';
+import viewProductImg from '../assets/dashboard_buttons/view_your_product.png';
+import viewProfileImg from '../assets/dashboard_buttons/view_your_profile.png';
+
 const MainLayout = () => {
   const { getItemCount, cartChanged, setCartChanged } = useCart();
   const { language, setLanguage, t } = useLanguage();
@@ -16,10 +23,12 @@ const MainLayout = () => {
   const [showMobileProfileModal, setShowMobileProfileModal] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [showMobileLanguageDropdown, setShowMobileLanguageDropdown] = useState(false);
+  const [showGoDropdown, setShowGoDropdown] = useState(false);
   const [cartAnimation, setCartAnimation] = useState(false);
   const dropdownRef = useRef(null);
   const languageDropdownRef = useRef(null);
   const mobileLanguageDropdownRef = useRef(null);
+  const goDropdownRef = useRef(null);
   const navigate = useNavigate();
 
   const currentItemCount = getItemCount();
@@ -70,7 +79,7 @@ const MainLayout = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close language dropdown when clicking outside
+  // Close language dropdown and go dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)) {
@@ -78,6 +87,9 @@ const MainLayout = () => {
       }
       if (mobileLanguageDropdownRef.current && !mobileLanguageDropdownRef.current.contains(event.target)) {
         setShowMobileLanguageDropdown(false);
+      }
+      if (goDropdownRef.current && !goDropdownRef.current.contains(event.target)) {
+        setShowGoDropdown(false);
       }
     };
 
@@ -116,6 +128,134 @@ const MainLayout = () => {
                 }`}
               />
             </Link>
+          </div>
+          {/* Go Button for Mobile Header - Right Side */}
+          <div className="md:hidden relative" ref={goDropdownRef}>
+            <button
+              onClick={() => setShowGoDropdown(!showGoDropdown)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              {language === 'hi' ? 'जाओ' : 'Go'}
+            </button>
+
+            {/* Go Dropdown Menu - Mobile Only */}
+            {showGoDropdown && (
+              <div className="absolute right-0 mt-2 w-[90vw] max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 z-50 animate-fadeIn">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-base font-bold text-gray-800">
+                    {language === 'hi' ? 'त्वरित क्रियाएं' : 'Quick Actions'}
+                  </h3>
+                  <button
+                    onClick={() => setShowGoDropdown(false)}
+                    className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="w-4 h-4 text-gray-600" />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Add Product Card */}
+                  <Link
+                    to="/dashboard/add-product"
+                    onClick={() => setShowGoDropdown(false)}
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
+                  >
+                    <div className="aspect-square relative">
+                      <img
+                        src={addProductImg}
+                        alt="Add Product"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-2 text-center bg-gradient-to-t from-green-600 to-green-500">
+                      <p className="text-[10px] font-semibold text-white leading-tight">
+                        {language === 'hi' ? 'उत्पाद जोड़ें' : 'Add Product'}
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* Edit Profile Card */}
+                  <Link
+                    to="/dashboard/edit-profile"
+                    onClick={() => setShowGoDropdown(false)}
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
+                  >
+                    <div className="aspect-square relative">
+                      <img
+                        src={editProfileImg}
+                        alt="Edit Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-2 text-center bg-gradient-to-t from-blue-600 to-blue-500">
+                      <p className="text-[10px] font-semibold text-white leading-tight">
+                        {language === 'hi' ? 'प्रोफ़ाइल संपादित करें' : 'Edit Profile'}
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* View Orders Card */}
+                  <Link
+                    to="/dashboard/requests"
+                    onClick={() => setShowGoDropdown(false)}
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
+                  >
+                    <div className="aspect-square relative">
+                      <img
+                        src={viewOrdersImg}
+                        alt="View Your Orders"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-2 text-center bg-gradient-to-t from-orange-600 to-orange-500">
+                      <p className="text-[10px] font-semibold text-white leading-tight">
+                        {language === 'hi' ? 'ऑर्डर देखें' : 'View Orders'}
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* View Products Card */}
+                  <Link
+                    to="/dashboard/manage-products"
+                    onClick={() => setShowGoDropdown(false)}
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
+                  >
+                    <div className="aspect-square relative">
+                      <img
+                        src={viewProductImg}
+                        alt="View Products"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-2 text-center bg-gradient-to-t from-purple-600 to-purple-500">
+                      <p className="text-[10px] font-semibold text-white leading-tight">
+                        {language === 'hi' ? 'उत्पाद देखें' : 'View Products'}
+                      </p>
+                    </div>
+                  </Link>
+
+                  {/* View Profile Card */}
+                  <Link
+                    to="/dashboard/profile"
+                    onClick={() => setShowGoDropdown(false)}
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden group"
+                  >
+                    <div className="aspect-square relative">
+                      <img
+                        src={viewProfileImg}
+                        alt="View Your Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-2 text-center bg-gradient-to-t from-indigo-600 to-indigo-500">
+                      <p className="text-[10px] font-semibold text-white leading-tight">
+                        {language === 'hi' ? 'प्रोफ़ाइल देखें' : 'View Profile'}
+                      </p>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Desktop Navigation Menu - Same as Bottom Navigation */}
@@ -206,21 +346,6 @@ const MainLayout = () => {
               <Home className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
               <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
                 {language === 'hi' ? 'होम' : 'Home'}
-              </span>
-            </Link>
-
-            {/* Go Button */}
-            <Link
-              to="/dashboard"
-              className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group"
-            >
-              <div className={`w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
-                isScrolled ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
-              }`}>
-                Go
-              </div>
-              <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
-                {language === 'hi' ? 'जाओ' : 'Go'}
               </span>
             </Link>
 
@@ -316,13 +441,6 @@ const MainLayout = () => {
           <Link to="/dashboard" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors">
             <LayoutDashboard className="w-6 h-6" />
             <span className="text-xs mt-1">{language === 'hi' ? 'डैशबोर्ड' : 'Dashboard'}</span>
-          </Link>
-          {/* Go Button for Mobile */}
-          <Link to="/dashboard" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
-              Go
-            </div>
-            <span className="text-xs mt-1">{language === 'hi' ? 'जाओ' : 'Go'}</span>
           </Link>
           <div className="relative" ref={mobileLanguageDropdownRef}>
             <button
