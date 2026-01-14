@@ -135,13 +135,14 @@ const MainLayout = () => {
           <div className="md:hidden relative" ref={goDropdownRef}>
             <button
               onClick={() => setShowGoDropdown(!showGoDropdown)}
-              // className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
+              className="transition-all duration-200 active:scale-90"
             >
               <img
                 src={showGoDropdown ? go2 : go1}
                 alt={language === 'hi' ? 'जाओ' : 'Go'}
-                className="max-w-full max-h-full object-contain"
-                style={{ maxHeight: '5.5rem', maxWidth: '4rem' }}
+                className={`max-w-full max-h-full object-contain transition-all duration-300 ${
+                  isScrolled ? 'max-h-16 max-w-12' : 'max-h-20 max-w-16'
+                }`}
               />
             </button>
 
