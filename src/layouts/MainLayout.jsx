@@ -27,11 +27,26 @@ const MainLayout = () => {
   const [showMobileLanguageDropdown, setShowMobileLanguageDropdown] = useState(false);
   const [showGoDropdown, setShowGoDropdown] = useState(false);
   const [cartAnimation, setCartAnimation] = useState(false);
+  const [hideTooltips, setHideTooltips] = useState({
+    dashboard: false,
+    cart: false,
+    language: false,
+    home: false,
+    profile: false
+  });
   const dropdownRef = useRef(null);
   const languageDropdownRef = useRef(null);
   const mobileLanguageDropdownRef = useRef(null);
   const goDropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  const handleTooltipClick = (tooltipName) => {
+    setHideTooltips(prev => ({ ...prev, [tooltipName]: true }));
+  };
+
+  const handleTooltipHover = (tooltipName) => {
+    setHideTooltips(prev => ({ ...prev, [tooltipName]: false }));
+  };
 
   const currentItemCount = getItemCount();
 
@@ -270,17 +285,23 @@ const MainLayout = () => {
           <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/dashboard"
-              className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group"
+              className="relative flex items-center justify-center text-gray-700 hover:text-green-600 transition-colors group"
+              onMouseEnter={() => handleTooltipHover('dashboard')}
+              onClick={() => handleTooltipClick('dashboard')}
             >
               <LayoutDashboard className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
-              <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+              <span className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded transition-opacity whitespace-nowrap pointer-events-none z-50 ${
+                hideTooltips.dashboard ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
+              }`}>
                 {language === 'hi' ? 'डैशबोर्ड' : 'Dashboard'}
               </span>
             </Link>
 
             <Link
               to="/dashboard/cart"
-              className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors relative group"
+              className="relative flex items-center justify-center text-gray-700 hover:text-green-600 transition-colors group"
+              onMouseEnter={() => handleTooltipHover('cart')}
+              onClick={() => handleTooltipClick('cart')}
             >
               <div className={`relative transition-all duration-300 ${cartAnimation ? 'animate-bounce' : ''}`}>
                 {currentItemCount > 0 ? (
@@ -296,7 +317,9 @@ const MainLayout = () => {
                   </span>
                 )}
               </div>
-              <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+              <span className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded transition-opacity whitespace-nowrap pointer-events-none z-50 ${
+                hideTooltips.cart ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
+              }`}>
                 {language === 'hi' ? 'कार्ट' : 'Cart'}
               </span>
             </Link>
@@ -304,11 +327,17 @@ const MainLayout = () => {
             {/* Language Switcher */}
             <div className="relative" ref={languageDropdownRef}>
               <button
-                onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
-                className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group focus:outline-none"
+                onClick={() => {
+                  setShowLanguageDropdown(!showLanguageDropdown);
+                  handleTooltipClick('language');
+                }}
+                onMouseEnter={() => handleTooltipHover('language')}
+                className="relative flex items-center justify-center text-gray-700 hover:text-green-600 transition-colors group focus:outline-none"
               >
                 <Languages className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
-                <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+                <span className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded transition-opacity whitespace-nowrap pointer-events-none z-50 ${
+                  hideTooltips.language ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
+                }`}>
                   {language === 'hi' ? 'भाषा' : 'Language'}
                 </span>
               </button>
@@ -349,10 +378,14 @@ const MainLayout = () => {
 
             <Link
               to="/landingPage"
-              className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group"
+              className="relative flex items-center justify-center text-gray-700 hover:text-green-600 transition-colors group"
+              onMouseEnter={() => handleTooltipHover('home')}
+              onClick={() => handleTooltipClick('home')}
             >
               <Home className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
-              <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+              <span className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded transition-opacity whitespace-nowrap pointer-events-none z-50 ${
+                hideTooltips.home ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
+              }`}>
                 {language === 'hi' ? 'होम' : 'Home'}
               </span>
             </Link>
@@ -360,19 +393,25 @@ const MainLayout = () => {
             {/* Profile with Dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
-                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="flex flex-col items-center text-gray-700 hover:text-green-600 transition-colors group focus:outline-none"
+                onClick={() => {
+                  setShowProfileDropdown(!showProfileDropdown);
+                  handleTooltipClick('profile');
+                }}
+                onMouseEnter={() => handleTooltipHover('profile')}
+                className="relative flex items-center justify-center text-gray-700 hover:text-green-600 transition-colors group focus:outline-none"
               >
                 {getUserInitials() ? (
                   <div className={`rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
-                    isScrolled ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'
+                    isScrolled ? 'w-5 h-5 text-[10px]' : 'w-6 h-6 text-xs'
                   }`}>
                     {getUserInitials()}
                   </div>
                 ) : (
                   <User className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
                 )}
-                <span className={`text-xs mt-1 font-medium ${isScrolled ? 'text-[10px]' : 'text-xs'}`}>
+                <span className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded transition-opacity whitespace-nowrap pointer-events-none z-50 ${
+                  hideTooltips.profile ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
+                }`}>
                   {user?.first_name || (language === 'hi' ? 'प्रोफ़ाइल' : 'Profile')}
                 </span>
               </button>
@@ -424,12 +463,20 @@ const MainLayout = () => {
 
       {/* Bottom Navigation for Mobile */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-40">
-        <div className="flex justify-around py-3">
-          <Link to="/landingPage" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors">
+        <div className="flex justify-around items-center py-3">
+          <Link
+            to="/landingPage"
+            className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
+          >
             <Home className="w-6 h-6" />
-            <span className="text-xs mt-1">{language === 'hi' ? 'होम' : 'Home'}</span>
           </Link>
-          <Link to="/dashboard/cart" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 relative transition-colors">
+          
+          <div className="h-8 w-px bg-gray-300"></div>
+          
+          <Link
+            to="/dashboard/cart"
+            className="relative flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
+          >
             <div className={`${cartAnimation ? 'animate-bounce' : ''}`}>
               {currentItemCount > 0 ? (
                 <ShoppingCart className="w-6 h-6" fill="currentColor" />
@@ -437,7 +484,6 @@ const MainLayout = () => {
                 <ShoppingCart className="w-6 h-6" />
               )}
             </div>
-            <span className="text-xs mt-1">{language === 'hi' ? 'कार्ट' : 'Cart'}</span>
             {currentItemCount > 0 && (
               <span className={`absolute -top-1 right-2 bg-green-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-semibold ${
                 cartAnimation ? 'scale-125' : 'scale-100'
@@ -446,17 +492,24 @@ const MainLayout = () => {
               </span>
             )}
           </Link>
-          <Link to="/dashboard" className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors">
+          
+          <div className="h-8 w-px bg-gray-300"></div>
+          
+          <Link
+            to="/dashboard"
+            className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
+          >
             <LayoutDashboard className="w-6 h-6" />
-            <span className="text-xs mt-1">{language === 'hi' ? 'डैशबोर्ड' : 'Dashboard'}</span>
           </Link>
+          
+          <div className="h-8 w-px bg-gray-300"></div>
+          
           <div className="relative" ref={mobileLanguageDropdownRef}>
             <button
               onClick={() => setShowMobileLanguageDropdown(!showMobileLanguageDropdown)}
               className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
             >
               <Languages className="w-6 h-6" />
-              <span className="text-xs mt-1">{t('language_switcher')}</span>
             </button>
             {showMobileLanguageDropdown && (
               <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 animate-fadeIn">
@@ -490,18 +543,19 @@ const MainLayout = () => {
               </div>
             )}
           </div>
+          <div className="h-8 w-px bg-gray-300"></div>
+          
           <button
             onClick={() => setShowMobileProfileModal(!showMobileProfileModal)}
             className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
           >
             {getUserInitials() ? (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-lg">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-[10px] shadow-lg">
                 {getUserInitials()}
               </div>
             ) : (
               <User className="w-6 h-6" />
             )}
-            <span className="text-xs mt-1">{user?.first_name || (language === 'hi' ? 'प्रोफ़ाइल' : 'Profile')}</span>
           </button>
         </div>
       </div>
