@@ -59,18 +59,18 @@ const MainLayout = () => {
   };
 
   // Scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleScroll = () => {
+  //     if (window.scrollY > 50) {
+  //       setIsScrolled(true);
+  //     } else {
+  //       setIsScrolled(false);
+  //     }
+  //   };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, []);
 
   // Cart animation effect - triggers only when cart changes
   useEffect(() => {
@@ -131,7 +131,7 @@ const MainLayout = () => {
       {/* Header */}
       <header
         className={`bg-white shadow-sm fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'py-2' : 'py-3'
+          isScrolled ? 'sm:py-0 md:py-2' : 'sm:py-0 md:py-3'
         }`}
       >
         <div className="max-w-6xl mx-auto px-4 flex justify-between items-center">
@@ -141,7 +141,7 @@ const MainLayout = () => {
                 src={desiLogo}
                 alt="Farm Fresh"
                 className={`transition-all duration-300 ${
-                  isScrolled ? 'w-24' : 'w-36'
+                  isScrolled ? 'md:w-24' : 'w-36'
                 }`}
               />
             </Link>
@@ -156,7 +156,7 @@ const MainLayout = () => {
                 src={showGoDropdown ? go2 : go1}
                 alt={language === 'hi' ? 'जाओ' : 'Go'}
                 className={`object-contain transition-all duration-300 ${
-                  isScrolled ? 'h-16 w-12' : 'h-20 w-16'
+                  isScrolled ? 'md:h-16 md:w-12' : 'h-20 w-16'
                 }`}
               />
             </button>
@@ -289,7 +289,7 @@ const MainLayout = () => {
               onMouseEnter={() => handleTooltipHover('dashboard')}
               onClick={() => handleTooltipClick('dashboard')}
             >
-              <LayoutDashboard className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+              <LayoutDashboard className={`transition-all duration-300 ${isScrolled ? 'md:w-5 md:h-5' : 'w-6 h-6'}`} />
               <span className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded transition-opacity whitespace-nowrap pointer-events-none z-50 ${
                 hideTooltips.dashboard ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
               }`}>
@@ -305,9 +305,9 @@ const MainLayout = () => {
             >
               <div className={`relative transition-all duration-300 ${cartAnimation ? 'animate-bounce' : ''}`}>
                 {currentItemCount > 0 ? (
-                  <ShoppingCart className={`${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} fill="currentColor" />
+                  <ShoppingCart className={`${isScrolled ? 'md:w-5 md:h-5' : 'w-6 h-6'}`} fill="currentColor" />
                 ) : (
-                  <ShoppingCart className={`${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                  <ShoppingCart className={`${isScrolled ? 'md:w-5 md:h-5' : 'w-6 h-6'}`} />
                 )}
                 {currentItemCount > 0 && (
                   <span className={`absolute -top-2 -right-2 bg-green-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-semibold ${
@@ -334,7 +334,7 @@ const MainLayout = () => {
                 onMouseEnter={() => handleTooltipHover('language')}
                 className="relative flex items-center justify-center text-gray-700 hover:text-green-600 transition-colors group focus:outline-none"
               >
-                <Languages className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                <Languages className={`transition-all duration-300 ${isScrolled ? 'md:w-5 md:h-5' : 'w-6 h-6'}`} />
                 <span className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded transition-opacity whitespace-nowrap pointer-events-none z-50 ${
                   hideTooltips.language ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
                 }`}>
@@ -382,7 +382,7 @@ const MainLayout = () => {
               onMouseEnter={() => handleTooltipHover('home')}
               onClick={() => handleTooltipClick('home')}
             >
-              <Home className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+              <Home className={`transition-all duration-300 ${isScrolled ? 'md:w-5 md:h-5' : 'w-6 h-6'}`} />
               <span className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded transition-opacity whitespace-nowrap pointer-events-none z-50 ${
                 hideTooltips.home ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
               }`}>
@@ -402,12 +402,12 @@ const MainLayout = () => {
               >
                 {getUserInitials() ? (
                   <div className={`rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
-                    isScrolled ? 'w-5 h-5 text-[10px]' : 'w-6 h-6 text-xs'
+                    isScrolled ? 'md:w-5 md:h-5 md:text-[10px]' : 'w-6 h-6 text-xs'
                   }`}>
                     {getUserInitials()}
                   </div>
                 ) : (
-                  <User className={`transition-all duration-300 ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                  <User className={`transition-all duration-300 ${isScrolled ? 'md:w-5 md:h-5' : 'w-6 h-6'}`} />
                 )}
                 <span className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded transition-opacity whitespace-nowrap pointer-events-none z-50 ${
                   hideTooltips.profile ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'
@@ -454,7 +454,7 @@ const MainLayout = () => {
       </header>
 
       {/* Spacer to prevent content from going under fixed header */}
-      <div className={`transition-all duration-300 ${isScrolled ? 'h-16' : 'h-20'}`}></div>
+      <div className={`transition-all duration-300 ${isScrolled ? 'md:h-16' : 'h-20'}`}></div>
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-6">
