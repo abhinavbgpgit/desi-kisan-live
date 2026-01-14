@@ -245,8 +245,8 @@ const HomeDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Dashboard Action Cards */}
-      <div className="p-4 bg-gradient-to-br from-green-50 to-blue-50">
+      {/* Dashboard Action Cards - Hidden on mobile, visible on desktop */}
+      <div className="p-4 bg-gradient-to-br from-green-50 to-blue-50 hidden md:block">
         <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {/* Add Product Card */}
