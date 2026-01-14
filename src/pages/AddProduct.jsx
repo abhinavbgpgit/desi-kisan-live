@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { 
+import {
   useGetFarmerProductsQuery,
   useAddFarmerProductMutation,
   useUpdateFarmerProductMutation,
-  useDeleteFarmerProductMutation 
+  useDeleteFarmerProductMutation,
+  useGetProfileProductsQuery
 } from '../store/api/farmerApi';
-import { useGetProfileInfoQuery } from '../store/api/farmerApi';
 
 const AddProduct = () => {
   const { t } = useLanguage();
@@ -16,8 +16,8 @@ const AddProduct = () => {
   // Fetch added products from API
   const { data: farmerProductsData, isLoading: isLoadingProducts, error: productsError, refetch } = useGetFarmerProductsQuery();
   
-  // Fetch available products from profile
-  const { data: profileData, isLoading: isLoadingProfile } = useGetProfileInfoQuery();
+  // Fetch available products from profile/products endpoint
+  const { data: profileProductsData, isLoading: isLoadingProfile } = useGetProfileProductsQuery();
   
   // Mutations
   const [addProduct] = useAddFarmerProductMutation();
@@ -49,8 +49,8 @@ const AddProduct = () => {
   // Get added products
   const addedProducts = farmerProductsData?.data || [];
   
-  // Get available products from profile
-  const availableProducts = profileData?.data?.farmer?.products || [];
+  // Get available products from profile/products endpoint
+  const availableProducts = profileProductsData?.data || [];
 
   // Handle delete click
   const handleDeleteClick = (product) => {

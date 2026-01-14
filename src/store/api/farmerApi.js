@@ -74,9 +74,14 @@ export const profileApi = createApi({
       return headers;
     },
   }),
+  tagTypes: ['ProfileProducts'],
   endpoints: (builder) => ({
     getProfileInfo: builder.query({
       query: () => 'profile/info',
+    }),
+    getProfileProducts: builder.query({
+      query: () => 'profile/products',
+      providesTags: ['ProfileProducts'],
     }),
   }),
 });
@@ -88,4 +93,4 @@ export const {
   useUpdateFarmerProductMutation,
   useDeleteFarmerProductMutation,
 } = farmersApi;
-export const { useGetProfileInfoQuery } = profileApi;
+export const { useGetProfileInfoQuery, useGetProfileProductsQuery } = profileApi;
