@@ -468,7 +468,7 @@ const MainLayout = () => {
             to="/landingPage"
             className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
           >
-            <Home className="w-6 h-6" />
+            <Home className="w-7 h-7" />
           </Link>
           
           <div className="h-8 w-px bg-gray-300"></div>
@@ -479,9 +479,9 @@ const MainLayout = () => {
           >
             <div className={`${cartAnimation ? 'animate-bounce' : ''}`}>
               {currentItemCount > 0 ? (
-                <ShoppingCart className="w-6 h-6" fill="currentColor" />
+                <ShoppingCart className="w-7 h-7" fill="currentColor" />
               ) : (
-                <ShoppingCart className="w-6 h-6" />
+                <ShoppingCart className="w-7 h-7" />
               )}
             </div>
             {currentItemCount > 0 && (
@@ -499,7 +499,7 @@ const MainLayout = () => {
             to="/dashboard"
             className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
           >
-            <LayoutDashboard className="w-6 h-6" />
+            <LayoutDashboard className="w-7 h-7" />
           </Link>
           
           <div className="h-8 w-px bg-gray-300"></div>
@@ -509,7 +509,7 @@ const MainLayout = () => {
               onClick={() => setShowMobileLanguageDropdown(!showMobileLanguageDropdown)}
               className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
             >
-              <Languages className="w-6 h-6" />
+              <Languages className="w-7 h-7" />
             </button>
             {showMobileLanguageDropdown && (
               <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 animate-fadeIn">
@@ -550,11 +550,11 @@ const MainLayout = () => {
             className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
           >
             {getUserInitials() ? (
-              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-[10px] shadow-lg">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-[10px] shadow-lg">
                 {getUserInitials()}
               </div>
             ) : (
-              <User className="w-6 h-6" />
+              <User className="w-7 h-7" />
             )}
           </button>
         </div>
