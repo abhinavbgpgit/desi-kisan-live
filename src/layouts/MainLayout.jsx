@@ -463,7 +463,7 @@ const MainLayout = () => {
 
       {/* Bottom Navigation for Mobile */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-40">
-        <div className="flex justify-around items-center py-3">
+        <div className="flex justify-around items-center py-4">
           <Link
             to="/landingPage"
             className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
