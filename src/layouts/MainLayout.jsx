@@ -6,6 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, User, Home, Users, ClipboardList, LogOut, UserCircle, Package, Languages, LayoutDashboard, X } from 'lucide-react';
 import desiLogo from '../assets/desi_logo.png';
+import go1 from '../assets/go1.jpeg';
+import go2 from '../assets/go2.jpeg';
 
 // Import dashboard button images
 import addProductImg from '../assets/dashboard_buttons/add_your_product .png';
@@ -133,9 +135,14 @@ const MainLayout = () => {
           <div className="md:hidden relative" ref={goDropdownRef}>
             <button
               onClick={() => setShowGoDropdown(!showGoDropdown)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              // className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
             >
-              {language === 'hi' ? 'जाओ' : 'Go'}
+              <img
+                src={showGoDropdown ? go2 : go1}
+                alt={language === 'hi' ? 'जाओ' : 'Go'}
+                className="max-w-full max-h-full object-contain"
+                style={{ maxHeight: '5.5rem', maxWidth: '4rem' }}
+              />
             </button>
 
             {/* Go Dropdown Menu - Mobile Only */}
