@@ -228,6 +228,16 @@ const AddProduct = () => {
       </div>
 
       <div className="p-4 md:p-6 max-w-6xl mx-auto">
+        {/* Add New Product Button - moved above Added Products Section */}
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center gap-2"
+          >
+            <span className="text-lg">+</span>
+            Add New Product
+          </button>
+        </div>
         {/* Added Products Section */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -235,13 +245,6 @@ const AddProduct = () => {
               <span className="text-2xl">📦</span>
               Your Added Items ({addedProducts.length})
             </h2>
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center gap-2"
-            >
-              <span className="text-lg">+</span>
-              Add New Product
-            </button>
           </div>
 
            {addedProducts.length === 0 ? (
