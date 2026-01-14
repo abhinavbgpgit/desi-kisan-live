@@ -504,15 +504,15 @@ const MainLayout = () => {
           
           <div className="h-8 w-px bg-gray-300"></div>
           
-          <div className="relative" ref={mobileLanguageDropdownRef}>
+          <div className="relative w-12" ref={mobileLanguageDropdownRef}>
             <button
               onClick={() => setShowMobileLanguageDropdown(!showMobileLanguageDropdown)}
-              className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors"
+              className="flex flex-col items-center text-sm text-gray-600 hover:text-green-600 transition-colors w-full"
             >
               <Languages className="w-7 h-7" />
             </button>
             {showMobileLanguageDropdown && (
-              <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 animate-fadeIn">
+              <div className="absolute bottom-12 -left-10 transform  w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 animate-fadeIn">
                 <button
                   onClick={() => toggleLanguage('en')}
                   className="flex items-center w-full px-4 py-3 hover:bg-gray-50 transition-colors text-left"
