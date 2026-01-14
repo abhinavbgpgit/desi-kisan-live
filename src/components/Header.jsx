@@ -13,14 +13,6 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
-  // Get user initials for avatar
-  const getUserInitials = () => {
-    if (!user || !user.first_name || !user.last_name) return '';
-    const firstInitial = user.first_name.charAt(0).toUpperCase();
-    const lastInitial = user.last_name.charAt(0).toUpperCase();
-    return `${firstInitial}${lastInitial}`;
-  };
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -107,9 +99,7 @@ const Header = () => {
   };
 
   return (
-    <header className={`bg-white/95 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-50 border-b border-green-100 transition-all duration-300 ${
-      isScrolled ? 'py-2' : 'py-4'
-    }`}>
+    <header className="bg-white/95 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-50 border-b border-green-100 transition-all duration-300 py-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
@@ -123,7 +113,7 @@ const Header = () => {
               <img
                 src={desiLogo}
                 alt="Desi Kisan"
-                className={`transition-all duration-300 ${isScrolled ? 'w-32' : 'w-40'}`}
+                className="w-32"
               />
             </Link>
           </motion.div>
@@ -211,21 +201,14 @@ const Header = () => {
             {user ? (
               <Link
                 to="/dashboard"
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-200"
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 px-4 py-2 text-sm"
               >
-                <span className="hidden sm:inline text-gray-700 font-medium">
-                  {language === 'hi' ? 'प्रोफ़ाइल' : 'Profile'}
-                </span>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-600 to-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                  {getUserInitials()}
-                </div>
+                {language === 'hi' ? 'डैशबोर्ड' : 'Dashboard'}
               </Link>
             ) : (
               <Link
                 to="/auth"
-                className={`bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 ${
-                  isScrolled ? 'px-4 py-2 text-sm' : 'px-6 py-2.5 text-base'
-                }`}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 px-4 py-2 text-sm"
               >
                 {language === 'hi' ? 'लॉगिन' : 'Login'}
               </Link>
