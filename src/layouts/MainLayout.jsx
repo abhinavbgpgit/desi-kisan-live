@@ -140,8 +140,8 @@ const MainLayout = () => {
               <img
                 src={showGoDropdown ? go2 : go1}
                 alt={language === 'hi' ? 'जाओ' : 'Go'}
-                className={`max-w-full max-h-full object-contain transition-all duration-300 ${
-                  isScrolled ? 'max-h-16 max-w-12' : 'max-h-20 max-w-16'
+                className={`object-contain transition-all duration-300 ${
+                  isScrolled ? 'h-16 w-12' : 'h-20 w-16'
                 }`}
               />
             </button>
