@@ -418,7 +418,7 @@ const MainLayout = () => {
       <div className={`transition-all duration-300 ${isScrolled ? 'h-16' : 'h-20'}`}></div>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-6">
+      <main className="max-w-6xl mx-auto px-4 py-6 pb-24 md:pb-6">
         <Outlet />
       </main>
 
